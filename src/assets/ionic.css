@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Rubik+Mono+One&display=swap');
+.header-md {
+  box-shadow: 1px 1px 20px 1px rgb(0 0 0 / 9%);
+}
+
+:host {
+  --box-shadow: 1px 1px 20px 1px rgb(0 0 0 / 9%);
+}
+:host(.button-solid) {
+  --box-shadow: 1px 1px 20px 1px rgb(0 0 0 / 9%);
+}
+
+* {
+  /* margin: 0;
+  padding: 0; */
+  font-family: 'Open Sans', sans-serif;
+}
+
+.button-solid {
+  box-shadow: 1px 1px 20px 1px rgb(0 0 0 / 9%) !important;
+}
+
+.welcom-page-age-range-container {
+  .p-radiobutton {
+    display: none;
+  }
+}
+
+.p-carousel-content {
+  .p-button {
+    display: none;
+  }
+}
+
+.reivew-ratting {
+  .p-rating-icon {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.address-detail {
+  .p-virtualscroller {
+    border: none;
+  }
+  .p-virtualscroller-content {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+}
