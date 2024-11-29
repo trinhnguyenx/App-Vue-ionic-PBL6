@@ -1,6 +1,11 @@
 import { $Fetch, ofetch } from "ofetch";
 
 export const $http: $Fetch = ofetch.create({
-  baseURL: 'https://b4d6-2405-4802-69b9-2b60-ed52-3fbc-4f17-8345.ngrok-free.app/',
+  baseURL: 'https://ff47-116-105-174-150.ngrok-free.app',
+  retry: false,
+});
+
+export const $httpcamera: $Fetch = ofetch.create({
+  baseURL: 'https://2aeb-116-105-174-150.ngrok-free.app',
   retry: false,
 });

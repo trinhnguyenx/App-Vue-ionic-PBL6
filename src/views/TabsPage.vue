@@ -6,10 +6,10 @@
         <ion-tab-button tab="tab1" href="/tabs/home">
           <ion-icon aria-hidden="true" :icon="home" />
         </ion-tab-button>
-        <ion-tab-button tab="tab2" href="/tabs/wallet">
+        <ion-tab-button tab="tab3" href="/tabs/wallet">
           <ion-icon aria-hidden="true" :icon="wallet" />
         </ion-tab-button>
-        <ion-tab-button tab="tab3" href="/tabs/scan">
+        <ion-tab-button tab="tab2" href="/tabs/scan">
           <div class="add-btn">
             <ion-icon aria-hidden="true" :icon="scanOutline" />
           </div>
@@ -31,7 +31,6 @@ import {  home, wallet, scanOutline, notifications, settings } from 'ionicons/ic
 import { useRoute } from 'vue-router';
 import { computed, ref } from 'vue';
 const route = useRoute();
-const routeName = computed(() => route.name)
 </script>
 
 <style>

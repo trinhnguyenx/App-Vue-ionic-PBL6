@@ -3,7 +3,7 @@
         <div class="home-page-container">
         <div class="home-page-header">
             <div class="home-page-header__avatar">
-                <img src="http://www.gravatar.com/avatar/?d=mp" alt="avatar" />
+                <img src="https://www.gravatar.com/avatar/?d=mp" alt="avatar" />
             </div>
             <div class="home-page-header__info">
                 <p class="home-page-header__info__name ">Nguyễn Công Trình</p>
@@ -35,37 +35,43 @@
         </div>
     </div>
     <div class="home-page-center bg-white">
-        <div class="title-center">
-            <p>Quản lí thông tin</p>
-            <div class="filed-card-manager">
-                <div class="filed-card-1">
-                    <img src="../assets/img/card.jpg" alt="">
-                    <p>Thẻ căn cước/CCCD</p>
-                </div>
-                <div class="filed-card-1">
-                    <img src="../assets/img/card.jpg" alt="">
-                    <p>Giấy phép lái xe</p>
-                </div>
-                <div class="filed-card-1">
-                    <img src="../assets/img/card.jpg" alt="">
-                    <p>Thẻ BHYT</p>
-                </div>
-            </div>
+        <h2>Quản lí thông tin</h2>
+    <div class="title-center">
+      <div class="filed-card-manager">
+          <img src="../assets/img/card.jpg" alt="Thẻ căn cước/CCCD">
+          <p>Thẻ căn cước/CCCD</p>
+      </div>
+        
+        <div class="filed-card-1" @click="gotogplx">
+          <img src="../assets/img/card.jpg" alt="Giấy phép lái xe">
+          <p>Giấy phép lái xe</p>
         </div>
-    </div>
+        
+        <div class="filed-card-1" @click="gotobhyt">
+          <img src="../assets/img/card.jpg" alt="Thẻ BHYT">
+          <p>Thẻ BHYT</p>
+        </div>
+      </div>
+  </div>
 
 </ion-page>
 </template>
 
 <script setup lang="ts">
-import { IonPage } from '@ionic/vue';
+import { IonPage, useIonRouter } from '@ionic/vue';
 import { onBeforeMount, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRouter} from 'vue-router';
+const router = useRouter();
 
-
+const gotogplx = async () => {
+    router.push('/gplx');
+};
+const gotobhyt = async () => {
+    router.push('/bhyt');
+};
 </script>
 
-<style scoped scss>
+<style lang="scss">
 .ion-page {
     left: 0;
     right: 0;
@@ -162,35 +168,29 @@ import { useRoute } from 'vue-router';
         }
     }
 }
-.home-page-center {
-    .title-center {
-        padding: 20px;
-        p {
-            font-size: 20px;
-            font-weight: bold;
-            color: #000;
-        }
-        .filed-card-manager {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            padding: 20px;
-            .filed-card-1 {
-                border-radius: 10px;
-                justify-content: center;
-                align-items: center;
-                img {
-                    width: 60px;
-                    height: 60px;
-                    border-radius: 50%
-                }
-                p {
-                    font-size: 12px;
-                    font-weight: bold; 
-                    color: black;
-                }
-            }
-        }
-    }
+.title-center {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 10px;
 }
+
+.title-center img {
+    width: 60px;
+    height: 60px;
+}
+
+p {
+    font-size: 12px;
+    color: black;
+    text-align: center
+}
+h2 {
+    color: black;
+    text-align: center
+}
+
+
 </style>

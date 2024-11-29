@@ -1,40 +1,55 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter} from 'vue-router';
 import InputText from 'primevue/inputtext';
 import InputGroup from 'primevue/inputgroup';
 import InputGroupAddon from 'primevue/inputgroupaddon';
 import Button from 'primevue/button';
 import { IonPage } from '@ionic/vue';
 import { notify } from '@/utils/toast';
-import { useRouter } from 'vue-router';
 import { loginApi } from '@/services/auth';
-import { ref } from 'vue';
+import { IUser } from '@/type/auth';
+import {useUserStore} from '@/stores/auth';
+
 const router = useRouter();
+
 const username = ref('');
 const password = ref('');
+const loginData = ref<IUser>();
+const loading = ref(false);
 
 const handleLogin = async () => {
-  console.log('Login');
+  loading.value = true;
   try {
-    loading.value = true;
-    const data = await loginApi({
+      loginData.value = await loginApi({
       username: username.value,
-      password: password.value
-    })
-    notify.success('Đăng nhập thành công');
-    await new Promise((resolve) => setTimeout(() => {
-      router.push('/tabs');
-      resolve(true);
-    }, 1000));
-    localStorage.setItem('token', 'data.accessToken');
+      password: password.value,
+    });
+
+    if (loginData.value) {
+      localStorage.setItem('token', loginData.value.accessToken);
+      localStorage.setItem('name', loginData.value.fullname);
+      localStorage.setItem('id', loginData.value.id.toString());
+        if (loginData.value.is_verified) {
+        router.push('/tabs'); 
+        } else {
+        notify.info('Yêu cầu xác thực CCCD');
+        router.push('/tabs/scan')
+      }
+    }
   } catch (error) {
-    notify.error('Đăng nhập thất bại'); 
+    notify.error('Đăng nhập thất bại');
+    console.error(error);
   } finally {
     loading.value = false;
   }
 };
 
-const loading = ref(false);
+
 </script>
+
+
+
 <template>
   <ion-page>
     <div class="relative w-full h-screen">
@@ -66,7 +81,6 @@ const loading = ref(false);
             <p class="text-center mt-5">Chưa có tài khoản?
               <router-link to="/auth/register" class=" text-blue-700">Đăng ký</router-link>
             </p>
-            <router-link to="/tabs" class="text-center w-full block mt-5 text-blue-700">Tiếp tục với tư cách khách</router-link>
           </div>
         </div>
       </div>

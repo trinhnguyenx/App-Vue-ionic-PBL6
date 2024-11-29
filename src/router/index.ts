@@ -3,23 +3,31 @@ import { RouteRecordRaw } from 'vue-router';
 import TabsPage from '../views/TabsPage.vue';
 
 const routes: Array<RouteRecordRaw> = [
-//   {
-//     path: '/auth/login',
-//     name: 'login',
-//     component: () => import('),
-// },
+{
+    path: '/auth/login',
+    name: 'login',
+    component: () => import('@/views/auth/login.vue'),
+},
+{
+  path: '/form',
+  name: 'FormPage',
+  component: () => import('@/views/FormPage.vue'),
+},
+{
+  path: '/gplx',
+  name: 'GplxPage',
+  component: () => import('@/views/GplxPage.vue'),
+},
+{
+  path: '/bhyt',
+  name: 'BhytPage',
+  component: () => import('@/views/BhytPage.vue'),
+},
+
   {
     path: '/',
     component: () => import('@/views/auth/login.vue')
   },
-  // {
-  //   path: '/type-travel',
-  //   component: () => import('@/views/preview/TypeTravelPage.vue')
-  // },
-  // {
-  //   path: '/age-range',
-  //   component: () => import('@/views/preview/AgeRangePage.vue')
-  // },
   {
     path: '/tabs/',
     component: TabsPage,
@@ -31,12 +39,23 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: 'scan',
-        component: () => import('@/views/Tab2Page.vue')
+        component: () => import('@/views/Tab2Page.vue'),
+        name: 'Scan'
       },
       {
         path: 'wallet',
-        name: 'profile',
+        name: 'wallet',
         component: () => import('@/views/Tab3Page.vue')
+      },
+      {
+        path: 'settings',
+        name: 'settings',
+        component: () => import('@/views/Tab5Page.vue')
+      },
+      {
+        path: 'notification',
+        name: 'notification',
+        component: () => import('@/views/Tab4Page.vue')
       },
       {
         path: 'home',
