@@ -6,7 +6,7 @@
                 <img src="https://www.gravatar.com/avatar/?d=mp" alt="avatar" />
             </div>
             <div class="home-page-header__info">
-                <p class="home-page-header__info__name ">Nguyễn Công Trình</p>
+                <p class="home-page-header__info__name ">{{ fullname }}</p>
             </div>
         </div>
         <div class="home-page-header-card">
@@ -15,9 +15,9 @@
                     <div>
                         <img src="../assets/img/cccd.jpg" alt="">
                     </div>
-                    <div>
+                    <div class="small-text-1">
                         <p>Mã QR</p>
-                        <p class="small-text" >Thẻ CCCD</p>
+                        <p>Thẻ CCCD</p>
                     </div>
                 </div>
             </div>
@@ -26,9 +26,9 @@
                     <div>
                         <img src="https://vneid.gov.vn/_next/static/media/app-icon.a38acfa3.svg" alt="">
                     </div>
-                    <div>
+                    <div class="small-text-2">
                         <p>Mã QR</p>
-                        <p class="small-text">Định danh điện tử</p>
+                        <p>Định danh điện tử</p>
                     </div>
                 </div>
             </div>
@@ -58,8 +58,8 @@
 </template>
 
 <script setup lang="ts">
-import { IonPage, useIonRouter } from '@ionic/vue';
-import { onBeforeMount, ref, watch } from 'vue';
+import { IonPage} from '@ionic/vue';
+import { ref } from 'vue';
 import { useRouter} from 'vue-router';
 const router = useRouter();
 
@@ -69,6 +69,9 @@ const gotogplx = async () => {
 const gotobhyt = async () => {
     router.push('/bhyt');
 };
+const fullname = ref('')
+    fullname.value = localStorage.getItem('name') || 'Tên Người Dùng'
+
 </script>
 
 <style lang="scss">
@@ -117,57 +120,56 @@ const gotobhyt = async () => {
         padding: 20px;
         .outbound-card-left {
             width: 48%;
-            height: 70px;
+            height: 50px;
             background-color: #f5f5f5;
             border-radius: 10px;
             .outbound-card-body {
                 display: flex;
                 padding: 10px;
-                gap: 20px;
+                gap: 10px;
                 align-items: center;
                 img {
-                    width: 60px;
-                    height: 40px;
-                    margin-top: 5px;
+                    width: 50px;
+                    height: 30px;
+                    margin-top: 0px;
                 }
-                p {
-                    font-size: 16px;
-                    font-weight: bold;
-                    color: black;
-                }
-                .small-text {
-                    font-size: 12px;
-                }
-                
             }
         }
         .outbound-card-right {
             width: 48%;
-            height: 70px;
+            height: 50px;
             background-color: #f5f5f5;
             border-radius: 10px;
             .outbound-card-body {
                 display: flex;
                 justify-content: center;
                 padding: 10px;
-                gap: 10px;
+                gap: 5px;
                 img {
-                    width: 60px;
-                    height: 40px;
-                    margin-top: 5px;
-                }
-                p {
-                    font-size: 16px;
-                    font-weight: bold;
-                    color: black;
-                }
-                .small-text {
-                    font-size: 12px;
+                    width: 50px;
+                    height: 30px;
+                    margin-top: 0px;
                 }
             }
         }
     }
 }
+.outbound-card-right  p {
+    font-size: 16px;
+    font-weight: bold;
+}
+.outbound-card-body .small-text-1 p {
+    font-size: 12px;
+    width: 60px;
+    color: black;
+
+}
+.outbound-card-body .small-text-2 p {
+    font-size: 12px;
+    width: 80px;
+    color: black;
+}
+
 .title-center {
     display: grid;
     grid-template-columns: auto auto auto;
@@ -182,14 +184,15 @@ const gotobhyt = async () => {
     height: 60px;
 }
 
-p {
+.title-center p {
     font-size: 12px;
     color: black;
     text-align: center
 }
 h2 {
     color: black;
-    text-align: center
+    text-align: center;
+    
 }
 
 
