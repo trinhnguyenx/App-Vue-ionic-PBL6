@@ -9,19 +9,34 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/auth/login.vue'),
 },
 {
-  path: '/form',
+  path: '/form/:userId',
   name: 'FormPage',
   component: () => import('@/views/FormPage.vue'),
 },
 {
-  path: '/gplx',
+  path: '/verify-gplx',
   name: 'GplxPage',
   component: () => import('@/views/GplxPage.vue'),
 },
 {
-  path: '/bhyt',
+  path: '/verify-bhyt',
   name: 'BhytPage',
   component: () => import('@/views/BhytPage.vue'),
+},
+{
+  path: '/cccd-view',
+  name: 'CCCDView',
+  component: () => import('@/views/CCCDView.vue'),
+},
+{
+  path: '/bhyt-view',
+  name: 'BHYTView',
+  component: () => import('@/views/BHYTView.vue'),
+},
+{
+  path: '/gplx-view',
+  name: 'GPLXView',
+  component: () => import('@/views/GPLXView.vue'),
 },
 
   {

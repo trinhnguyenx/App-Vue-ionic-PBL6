@@ -14,9 +14,9 @@ import { ICardCCCDCreate } from "@/type/card";
 import { useRouter, useRoute } from 'vue-router';
 import { saveCCCD } from '@/services/photoService';
 import {updateActive} from '@/services/auth';
-import {useUserStore} from '@/stores/auth';
+import { alertController } from '@ionic/vue';
 
-const userStore = useUserStore();
+
 const router = useRouter();
 
 
@@ -157,35 +157,39 @@ const saveForm = async () => {
 
 //////////////
 
+const presentAlert = async () => {
+  const alert = await alertController.create({
+    header: 'Xác thực Căn Cước Công Dân',
+    message: 'Bạn cần xác thực tài khoản bằng CCCD',
+    buttons: [
+      {
+        text: 'Ok',
+        handler: () => {
+          console.log('Ok button clicked');
+          takePhoto();
+        }
+      },
+      {
+        text: 'Cancel',
+        role: 'cancel',
+        handler: () => {
+          router.push('/auth/login');
+        }
+      }
+    ],
+  });
+
+  await alert.present();
+};
+
 onMounted(() => {
-  showAlert.value = true;
+  presentAlert();
 });
 </script>
 
 <template>
   <ion-page>
     <!-- Popup Alert -->
-    <IonAlert
-      :isOpen="showAlert"
-      onDidDismiss="() => showAlert.value = false"
-      header="Xác thực tài khoản"
-      message="Bạn cần xác thực tài khoản bằng CCCD."
-      :buttons="[ 
-        {
-          text: 'OK',
-          handler: () => {
-            takePhoto();
-          }
-        },
-        {
-          text: 'Hủy',
-          role: 'cancel',
-          handler: () => {
-            router.push('/auth/login');
-          }
-        }
-      ]"
-    />
           <IonContent class="ion-padding" v-if="showForm">
       <IonGrid class="ion-no-padding">
         <IonCard>

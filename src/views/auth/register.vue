@@ -46,18 +46,18 @@ const handleRegister = async () => {
   <ion-page>
     <div class="relative w-full h-screen">
       <img
-        class="absolute z-[-1] top-0 left-0"
-        src="@/assets/img/trongdong.jpg"
+        class="absolute z-[-1] top-0 left-0 zoom"
+        src="@/assets/img/trongdo.jpg"
         alt=""
       />
       <div
-        class="absolute p-8 z-10 h-[70vh] bottom-0 bg-white w-full left-0 rounded-tl-[36px] rounded-tr-[36px]"
+        class="absolute p-8 z-10 h-[82vh] bottom-0 bg-white w-full left-0 rounded-tl-[36px] rounded-tr-[36px]"
       >
         <div class="relative">
-          <p class="text-3xl font-bold text-[#191919]">Đăng ký</p>
-          <div class="mt-10">
+          <p class="text-3xl font-bold text-[#191919]">Đăng ký VNeID</p>
+          <div class="mt-5">
             <div class="flex flex-col gap-2">
-              <label for="username">Username</label>
+              <label for="username">Tài khoản</label>
               <InputGroup class="w-full">
                 <InputGroupAddon>
                   <Icon icon="solar-user-bold-duotone" />
@@ -65,17 +65,17 @@ const handleRegister = async () => {
                 <InputText v-model="username" placeholder="Username" />
               </InputGroup>
             </div>
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-2 mt-5">
               <label for="username">Email</label>
               <InputGroup class="w-full">
                 <InputGroupAddon>
-                  <Icon icon="solar-user-bold-duotone" />
+                  <Icon icon="mdi:email" />
                 </InputGroupAddon>
                 <InputText v-model="email" placeholder="Example@gmail.com" />
               </InputGroup>
             </div>
 
-            <div class="flex flex-col gap-2 mt-8">
+            <div class="flex flex-col gap-2 mt-5">
               <label for="username">Mật khẩu</label>
               <InputGroup class="w-full">
                 <InputGroupAddon>
@@ -87,7 +87,7 @@ const handleRegister = async () => {
               </InputGroup>
             </div>
 
-            <div class="flex flex-col gap-2 mt-8">
+            <div class="flex flex-col gap-2 mt-5">
               <label for="username">Xác nhận mật khẩu</label>
               <InputGroup class="w-full">
                 <InputGroupAddon>
@@ -101,12 +101,12 @@ const handleRegister = async () => {
 
             <Button
               @click="handleRegister"
-              class="mt-10 h-14 w-full rounded-full"
+              class="mt-10 h-14 w-full rounded-full button-register"
               label="Đăng ký"
             />
             <p class="text-center mt-5">
               Đã có tài khoản?
-              <router-link :to="{ name: 'login' }" class="text-blue-700"
+              <router-link :to="{ name: 'login' }" class="button-dk"
                 >Đăng nhập</router-link
               >
             </p>
@@ -116,3 +116,17 @@ const handleRegister = async () => {
     </div>
   </ion-page>
 </template>
+<style scoped>
+.button-register {
+  background-color: #D7344C !important;
+  border-color: #D7344C !important;
+}
+.zoom {
+    transform: scale(1.5);  
+    transform-origin: center center;
+  }
+  .button-dk {
+  color: #D7344C !important;
+  font-weight: bold;
+}
+</style>

@@ -8,6 +8,8 @@ import { notify } from "@/utils/toast";
 import { ICardBHYTCreate } from "@/type/card";
 import { useRouter} from 'vue-router';
 import { saveBHYT, updateActiveBHYT } from '@/services/photoService';
+import { alertController } from '@ionic/vue';
+
 
 const router = useRouter();
 
@@ -18,7 +20,6 @@ const rootDir = "DCIM";
 const listData = ref<ICardBHYTCreate | null>(null);
 const showForm = ref(false);    
 const showerror = ref<string | null>(null);
-const showAlert = ref(false);
 
 ////////////
 const name = ref('');
@@ -133,6 +134,7 @@ const saveForm = async () => {
       await saveBHYT(listData.value);
       setTimeout( async () => {
         await updateActiveBHYT(userId);
+        localStorage.setItem('is_bhyt', 'true');
       }, 2000);
       notify.success('Dữ liệu đã được lưu thành công');
       setTimeout(() => {
@@ -149,35 +151,38 @@ const gotohome = async () => {
 };
 //////////////
 
+const presentAlert = async () => {
+  const alert = await alertController.create({
+    header: 'Xác thực Bảo hiểm y tế',
+    message: 'Bạn cần xác thực tài khoản bằng BHYT',
+    buttons: [
+      {
+        text: 'Ok',
+        handler: () => {
+          console.log('Ok button clicked');
+          takePhoto();
+        }
+      },
+      {
+        text: 'Cancel',
+        role: 'cancel',
+        handler: () => {
+          router.push('/tabs');
+        }
+      }
+    ],
+  });
+
+  await alert.present();
+};
+
 onMounted(() => {
-  showAlert.value = true;
+  presentAlert();
 });
 </script>
 
 <template>
   <ion-page>
-    <!-- Popup Alert -->
-    <IonAlert
-      :isOpen="showAlert"
-      onDidDismiss="() => showAlert.value = false"
-      header="Xác thực Bảo hiểm y tế"
-      message="Bạn cần xác thực tài khoản bằng BHYT."
-      :buttons="[ 
-        {
-          text: 'OK',
-          handler: () => {
-            takePhoto();
-          }
-        },
-        {
-          text: 'Hủy',
-          role: 'cancel',
-          handler: () => {
-            router.push('/tabs');
-          }
-        }
-      ]"
-    />
           <IonContent class="ion-padding" v-if="showForm">
       <IonGrid class="ion-no-padding">
         <IonCard>

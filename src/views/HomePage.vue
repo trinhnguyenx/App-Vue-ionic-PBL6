@@ -35,9 +35,9 @@
         </div>
     </div>
     <div class="home-page-center bg-white">
-        <h2>Quản lí thông tin</h2>
+        <h2 style="margin-top: 20px; font-weight: 600;">Quản lí thông tin</h2>
     <div class="title-center">
-      <div class="filed-card-manager">
+      <div class="filed-card-manager" @click="gotocccd">
           <img src="../assets/img/card.jpg" alt="Thẻ căn cước/CCCD">
           <p>Thẻ căn cước/CCCD</p>
       </div>
@@ -63,18 +63,32 @@ import { ref } from 'vue';
 import { useRouter} from 'vue-router';
 const router = useRouter();
 
+const gotocccd = async () => {
+    if (localStorage.getItem('is_verified') === 'true') {
+        router.push('/cccd-view');
+    } else {
+        router.push('/form');
+    }};
 const gotogplx = async () => {
-    router.push('/gplx');
+    if (localStorage.getItem('is_gplx') === 'true') {
+        router.push('/gplx-view');
+    } else {
+        router.push('/verify-gplx');
+    }
 };
 const gotobhyt = async () => {
-    router.push('/bhyt');
+    if (localStorage.getItem('is_bhyt') === 'true') {
+        router.push('/bhyt-view');
+    } else {
+        router.push('/verify-bhyt');
+    }
 };
 const fullname = ref('')
     fullname.value = localStorage.getItem('name') || 'Tên Người Dùng'
 
 </script>
 
-<style lang="scss">
+<style>
 .ion-page {
     left: 0;
     right: 0;
@@ -94,106 +108,84 @@ const fullname = ref('')
     background-position: center;
     background-repeat: no-repeat;
     position: relative;
-    .home-page-header {
-        display: flex;
-        padding:  20px;
-        align-items: center;
-        gap: 20px;
-        text-transform: uppercase;;
-        .home-page-header__avatar {
-            img {
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-            }
-        }
-        .home-page-header__info {
-            .home-page-header__info__name {
-                font-size: 20px;
-                font-weight: bold;
-            }
-        }
-    }
-    .home-page-header-card {
-        display: flex;
-        justify-content: space-between;
-        padding: 20px;
-        .outbound-card-left {
-            width: 48%;
-            height: 50px;
-            background-color: #f5f5f5;
-            border-radius: 10px;
-            .outbound-card-body {
-                display: flex;
-                padding: 10px;
-                gap: 10px;
-                align-items: center;
-                img {
-                    width: 50px;
-                    height: 30px;
-                    margin-top: 0px;
-                }
-            }
-        }
-        .outbound-card-right {
-            width: 48%;
-            height: 50px;
-            background-color: #f5f5f5;
-            border-radius: 10px;
-            .outbound-card-body {
-                display: flex;
-                justify-content: center;
-                padding: 10px;
-                gap: 5px;
-                img {
-                    width: 50px;
-                    height: 30px;
-                    margin-top: 0px;
-                }
-            }
-        }
-    }
 }
-.outbound-card-right  p {
-    font-size: 16px;
+
+.home-page-header {
+    display: flex;
+    padding: 20px;
+    align-items: center;
+    gap: 20px;
+    text-transform: uppercase;
+}
+.home-page-header__avatar img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+.home-page-header__info .home-page-header__info__name {
+    font-size: 20px;
+    font-weight: bold;
+}
+.home-page-header-card {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+}
+.outbound-card-left, .outbound-card-right {
+    width: 48%;
+    height: 50px;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+}
+.outbound-card-left .outbound-card-body, .outbound-card-right .outbound-card-body {
+    display: flex;
+    padding: 10px;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+.outbound-card-left img, .outbound-card-right img {
+    width: 50px;
+    height: 30px;
+    margin-top: 0;
+}
+.outbound-card-right {
+    justify-content: center;
+}
+.outbound-card-left p {
+    font-weight: bold;
+}
+.outbound-card-right p {
     font-weight: bold;
 }
 .outbound-card-body .small-text-1 p {
-    font-size: 12px;
+    font-size: 8px;
     width: 60px;
     color: black;
-
 }
 .outbound-card-body .small-text-2 p {
-    font-size: 12px;
+    font-size: 8px;
     width: 80px;
     color: black;
 }
-
 .title-center {
     display: grid;
     grid-template-columns: auto auto auto;
-    align-items: center;
-    justify-content: center;
     gap: 20px;
     margin: 30px 10px;
 }
-
 .title-center img {
     width: 60px;
     height: 60px;
 }
-
 .title-center p {
     font-size: 12px;
     color: black;
-    text-align: center
+    text-align: center;
 }
 h2 {
     color: black;
     text-align: center;
-    
 }
-
 
 </style>

@@ -9,7 +9,6 @@ import { IonPage } from '@ionic/vue';
 import { notify } from '@/utils/toast';
 import { loginApi } from '@/services/auth';
 import { IUser } from '@/type/auth';
-import {useUserStore} from '@/stores/auth';
 
 const router = useRouter();
 
@@ -25,17 +24,23 @@ const handleLogin = async () => {
       username: username.value,
       password: password.value,
     });
-
+      if (loginData.value) {
+        console.log(loginData.value.id);
+      }
     if (loginData.value) {
       localStorage.setItem('token', loginData.value.accessToken);
       localStorage.setItem('name', loginData.value.fullname);
       localStorage.setItem('id', loginData.value.id.toString());
+      localStorage.setItem('is_bhyt', loginData.value.is_bhyt.toString());
+      localStorage.setItem('is_gplx', loginData.value.is_gplx.toString());
+      localStorage.setItem('is_verified', loginData.value.is_verified.toString());
         if (loginData.value.is_verified) {
         router.push('/tabs'); 
         } else {
-        notify.info('Yêu cầu xác thực CCCD');
-        router.push('/tabs/scan')
+          router.push({ name: 'FormPage', params: { userId: loginData.value.id } });
       }
+    } else {
+      notify.error("Login failed, please try again.");
     }
   } catch (error) {
     notify.error('Đăng nhập thất bại');
@@ -53,13 +58,13 @@ const handleLogin = async () => {
 <template>
   <ion-page>
     <div class="relative w-full h-screen">
-      <img class="absolute z-[-1] top-0 left-0 w-full" src="@/assets/img/trongdong.jpg" alt="">
+      <img class="absolute z-[-1] top-0 left-0 w-full  zoom" src="@/assets/img/trongdo.jpg" alt="">
       <div class="absolute p-8 z-10 h-[70vh] bottom-0 bg-white w-full left-0 rounded-tl-[36px] rounded-tr-[36px]">
         <div class="relative">
-          <p class="text-3xl font-bold text-[#191919]">Đăng nhập</p>
+          <p class="text-3xl font-bold text-[#191919]">Đăng nhập VNeID</p>
           <div class="mt-10">
             <div class="flex flex-col gap-2">
-              <label for="username">Username</label>
+              <label for="username">Tài khoản</label>
               <InputGroup class="w-full custom-input">
                 <InputGroupAddon class="bg-white">
                   <Icon icon="solar-user-bold-duotone" class="custom-icon-color" />
@@ -77,9 +82,9 @@ const handleLogin = async () => {
                 <InputText v-model="password" type="password" placeholder="******" class="bg-white text-black" />
               </InputGroup>
             </div>
-            <Button :loading="loading" class="mt-10 h-14 w-full rounded-full" @click="handleLogin" label="Đăng nhập" />
+            <Button :loading="loading" class=" button-login mt-10 h-14 w-full rounded-full" @click="handleLogin" label="Đăng nhập" />
             <p class="text-center mt-5">Chưa có tài khoản?
-              <router-link to="/auth/register" class=" text-blue-700">Đăng ký</router-link>
+              <router-link to="/auth/register" class="button-dk">Đăng ký</router-link>
             </p>
           </div>
         </div>
@@ -104,5 +109,16 @@ const handleLogin = async () => {
   color: black !important; 
   font-size: 1.2rem;
 }
-
+.button-login {
+  background-color: #D7344C !important;
+  border-color: #D7344C !important;
+}
+.button-dk {
+  color: #D7344C !important;
+  font-weight: bold;
+}
+.zoom {
+    transform: scale(1.5);  
+    transform-origin: center center;
+  }
 </style>

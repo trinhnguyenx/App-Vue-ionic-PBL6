@@ -8,6 +8,8 @@ import { notify } from "@/utils/toast";
 import { ICardGPLXCreate } from "@/type/card";
 import { useRouter} from 'vue-router';
 import { saveGPLX, updateActiveGPLX } from '@/services/photoService';
+import { alertController } from '@ionic/vue';
+
 const router = useRouter();
 
 
@@ -17,7 +19,6 @@ const rootDir = "DCIM";
 const listData = ref<ICardGPLXCreate | null>(null);
 const showForm = ref(false);    
 const showerror = ref<string | null>(null);
-const showAlert = ref(false);
 
 ////////////
 const name = ref('');
@@ -96,9 +97,10 @@ const uploadPhoto = async (image: any) => {
     } else {
       notify.error('Không thể xác thực thông tin từ ảnh. Vui lòng thử lại.');
     }
+    localStorage.setItem('photo', 'true');
     setTimeout(() => {
       showForm.value = true;
-    }, 2000);
+    }, 1000);
 
     showerror.value = null;
     return result;
@@ -109,6 +111,8 @@ const uploadPhoto = async (image: any) => {
 };
 ////////////
 const gotohome = async () => {
+    showForm.value = false;
+    localStorage.removeItem('photo');
     router.push('/tabs');
 };
 const userId: number = parseInt(localStorage.getItem('id') || '0', 10);
@@ -138,6 +142,7 @@ const saveForm = async () => {
       await saveGPLX(listData.value);
       setTimeout( async () => {
         await updateActiveGPLX(userId);
+        localStorage.setItem('is_gplx', 'true');
       }, 2000);
       notify.success('Dữ liệu đã được lưu thành công');
       setTimeout(() => {
@@ -150,37 +155,44 @@ const saveForm = async () => {
 };
 
 //////////////
+const presentAlert = async () => {
+  const alert = await alertController.create({
+    header: 'Xác thực Giấy Phép Lái Xe',
+    message: 'Bạn cần xác thực tài khoản bằng GPLX',
+    buttons: [
+      {
+        text: 'Ok',
+        handler: () => {
+          takePhoto();
+        }
+      },
+      {
+        text: 'Cancel',
+        role: 'cancel',
+        handler: () => {
+          router.push('/tabs');
+        }
+      }
+    ],
+  });
+
+  await alert.present();
+};
 
 onMounted(() => {
-  showAlert.value = true;
+  const photoCaptured = localStorage.getItem('photo');
+
+if (photoCaptured !== 'true') {
+  presentAlert();
+} else {
+  showForm.value = true;
+}
 });
 </script>
 
 <template>
   <ion-page>
-    <!-- Popup Alert -->
-    <IonAlert
-      :isOpen="showAlert"
-      onDidDismiss="() => showAlert.value = false"
-      header="Xác thực Giấy Phép Lái Xe"
-      message="Bạn cần xác thực tài khoản bằng GPLX."
-      :buttons="[ 
-        {
-          text: 'OK',
-          handler: () => {
-            takePhoto();
-          }
-        },
-        {
-          text: 'Hủy',
-          role: 'cancel',
-          handler: () => {
-            router.push('/tabs');
-          }
-        }
-      ]"
-    />
-          <IonContent class="ion-padding" v-if="showForm">
+        <IonContent class="ion-padding" v-if="showForm">
       <IonGrid class="ion-no-padding">
         <IonCard>
           <IonCardHeader>
@@ -250,25 +262,23 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Full page styling */
 ion-page {
   height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Card styling */
 ion-card {
   margin: 0;
   border-radius: 10px;
 }
 
-/* Full-width inputs */
 ion-input {
   width: 100%;
 }
 
-/* Button styling */
 ion-button {
   --background: #3880ff;
   --color: white;
@@ -277,9 +287,9 @@ ion-button {
   padding: 10px;
 }
 
-/* Alert spacing */
 ion-alert {
   width: 80%;
   margin-left: 10%;
+  z-index: 1000;
 }
 </style>

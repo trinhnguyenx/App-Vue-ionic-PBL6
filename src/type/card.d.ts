@@ -67,6 +67,10 @@ export interface ICardCCCD {
     nationality: string
     user: number
 }
+export interface ICardCCCDBehind {
+    issue_date: string
+}
+
 export interface ICardCCCDCreate {
     id: string
     name: string
