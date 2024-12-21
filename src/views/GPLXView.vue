@@ -1,12 +1,10 @@
 <template>
     <ion-page>
     <ion-content class="ion-padding">
-        <!-- Kiểm tra xem dữ liệu đã được tải xong chưa -->
-        <div v-if="!listData|| Object.keys(listData).length === 0">
-            <p>Đang tải dữ liệu...</p>
+        <div  v-if="!listData|| Object.keys(listData).length === 0">
+            <div class="loader" v-if="loading"></div>
         </div>
 
-        <!-- Nếu dữ liệu đã có, hiển thị các thông tin -->
         <div v-else>
             <!-- arrowBack -->
             <div class="back">
@@ -81,14 +79,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeMount} from 'vue';
-import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonGrid, IonRow, IonCol, IonItem, IonLabel, IonText, IonButton, IonContent, IonPage } from '@ionic/vue';
+import { ref, onMounted} from 'vue';
+import { IonCard, IonIcon, IonContent, IonPage } from '@ionic/vue';
 import { arrowBack, checkmarkCircle} from 'ionicons/icons';
 import { useRouter} from 'vue-router';
 import { getGplx } from '@/services/auth';
 import { ICardGPLX } from "@/type/card";
 import { notify } from '@/utils/toast';
 const router = useRouter();
+
+const loading = ref(false);
+
 const gotoHome = async () => {
     router.push('/tabs');
 };
@@ -101,6 +102,7 @@ const listData = ref<ICardGPLX>({} as ICardGPLX);
 
 const userId = localStorage.getItem('id');
 const getGplxData = async () => {
+    loading.value = true;
     try {
         const userIdNumber = userId !== null ? parseInt(userId) : NaN;        
         if (userId !== null) {
@@ -112,6 +114,8 @@ const getGplxData = async () => {
         }
     } catch (error) {
         notify.error('Failed to get data GPLX');
+    } finally {
+        loading.value = false;
     }
 };
 </script>
@@ -250,5 +254,80 @@ const getGplxData = async () => {
 }
 .verify ion-icon {
     color: #41A350;
+}
+/* From Uiverse.io by SchawnnahJ */ 
+.loader {
+ position: relative;
+ width: 2.5em;
+ height: 2.5em;
+ transform: rotate(165deg);
+}
+
+.loader:before, .loader:after {
+ content: "";
+ position: absolute;
+ top: 50%;
+ left: 50%;
+ display: block;
+ width: 0.5em;
+ height: 0.5em;
+ border-radius: 0.25em;
+ transform: translate(-50%, -50%);
+}
+
+.loader:before {
+ animation: before8 2s infinite;
+}
+
+.loader:after {
+ animation: after6 2s infinite;
+}
+
+@keyframes before8 {
+ 0% {
+  width: 0.5em;
+  box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
+ }
+
+ 35% {
+  width: 2.5em;
+  box-shadow: 0 -0.5em rgba(225, 20, 98, 0.75), 0 0.5em rgba(111, 202, 220, 0.75);
+ }
+
+ 70% {
+  width: 0.5em;
+  box-shadow: -1em -0.5em rgba(225, 20, 98, 0.75), 1em 0.5em rgba(111, 202, 220, 0.75);
+ }
+
+ 100% {
+  box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
+ }
+}
+
+@keyframes after6 {
+ 0% {
+  height: 0.5em;
+  box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
+ }
+
+ 35% {
+  height: 2.5em;
+  box-shadow: 0.5em 0 rgba(61, 184, 143, 0.75), -0.5em 0 rgba(233, 169, 32, 0.75);
+ }
+
+ 70% {
+  height: 0.5em;
+  box-shadow: 0.5em -1em rgba(61, 184, 143, 0.75), -0.5em 1em rgba(233, 169, 32, 0.75);
+ }
+
+ 100% {
+  box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
+ }
+}
+
+.loader {
+ position: absolute;
+ top: calc(50% - 1.25em);
+ left: calc(50% - 1.25em);
 }
 </style>

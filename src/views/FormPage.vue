@@ -25,6 +25,9 @@ import { useRouter, useRoute } from "vue-router";
 import { saveCCCD } from "@/services/photoService";
 import { updateActive } from "@/services/auth";
 import { alertController } from "@ionic/vue";
+import { INotification } from "@/type/auth";
+import { a } from "ofetch/dist/shared/ofetch.d0b3d489";
+
 
 const router = useRouter();
 const route = useRoute();
@@ -37,6 +40,7 @@ const dataBehind = ref<ICardCCCDBehind | null>(null);;
 const showForm = ref(false);
 const userId = ref(0);
 const isFront = ref(true);
+
 
 ////////////
 const dob = ref("");
@@ -124,7 +128,7 @@ const uploadPhoto = async (image: any) => {
       isFront.value = false;
       presentAlertBehind()
     }
-    }, 1000);
+    }, 1500);
 
     return result;
   } catch (error) {
@@ -160,7 +164,7 @@ const uploadPhotoBehind = async(image: any) => {
 
     setTimeout(() => {
       showForm.value = true;
-    }, 2000);
+    }, 1500);
   } catch (error) {
     notify.error(`${error}`);
   }
@@ -191,7 +195,7 @@ const saveForm = async () => {
 
     await saveCCCD(listData.value);
     setTimeout(async () => {
-      await updateActive(name.value, userId.value);
+    await updateActive(name.value, userId.value);
       localStorage.setItem("is_verified", "true");
     }, 2000);
     notify.success("Dữ liệu đã được lưu thành công");
@@ -203,6 +207,28 @@ const saveForm = async () => {
     notify.error(`Lỗi xảy ra, vui lòng thử lại. ${error}`);
   }
 };
+
+// const notifyCCCDExpiry = async (time_cccd: any, time_expired: any) => {
+//     const [dayCCCD, monthCCCD, yearCCCD] = time_cccd.split('/');
+//     const cccdDate: any = new Date(`${yearCCCD}-${monthCCCD}-${dayCCCD}`);
+
+//     const expiredDate: any = new Date(time_expired);
+
+//     const timeDiff = cccdDate - expiredDate; 
+//     const dayDiff = timeDiff / (1000 * 60 * 60 * 24); 
+//     dataNoti.value.user_id = userId.value;
+
+//     if (dayDiff > 0 && dayDiff <= 30) {
+//       dataNoti.value.description = `Căn cước công dân của bạn sắp hết hạn sau ${Math.ceil(dayDiff)} ngày. Vui lòng gia hạn sớm!`;
+//         await createNoti(dataNoti.value);
+//     } else if (dayDiff <= 0) {
+//         dataNoti.value.description ="Căn cước công dân của bạn đã hết hạn. Vui lòng gia làm mới ngay!";
+//         await createNoti(dataNoti.value);
+//     } else {
+//         dataNoti.value.title = "";
+//         dataNoti.value.description = "";
+//     }
+// }
 
 //////////////
 
@@ -294,7 +320,9 @@ onMounted(() => {
 
               <IonItem lines="full">
                 <IonLabel position="stacked">Birthday:</IonLabel>
-                <IonInput v-model="dob" placeholder="Nhập ngày sinh"></IonInput>
+                <IonInput v-model="dob" 
+                placeholder="Nhập ngày sinh" clear-input > 
+              </IonInput>
               </IonItem>
 
               <IonItem lines="full">
@@ -329,6 +357,7 @@ onMounted(() => {
                 <IonInput
                   v-model="expireDate"
                   placeholder="Ngày hết hạn"
+                  clear-input
                 ></IonInput>
               </IonItem>
 

@@ -49,11 +49,17 @@
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
+ion-button {
+    --background: #D7344C;
+    --border-radius: 10px;
+    --border: 1px solid #D7344C;
+    --border-color: #ffffff;
+  }
 </style>
   
   <script setup lang="ts">
   import { ref } from 'vue';
-  import { IonPage, IonButton, IonAlert, IonContent } from '@ionic/vue';
+  import { IonPage, IonButton, IonAlert, IonContent, IonHeader, IonToolbar, IonTitle } from '@ionic/vue';
   import { useRouter} from 'vue-router';
   const router = useRouter();
 

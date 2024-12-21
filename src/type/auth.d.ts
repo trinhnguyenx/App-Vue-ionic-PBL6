@@ -12,3 +12,13 @@ export interface IUser {
     is_gplx: boolean;
     accessToken: string;
 }
+
+export interface INotification {
+    uuid: string;
+    title: string;
+    description: string;
+    created_at: string;
+    user_id: number;
+    is_new: boolean;
+}
+

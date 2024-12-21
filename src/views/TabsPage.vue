@@ -61,6 +61,9 @@ const route = useRoute();
   font-weight: 800;
 }
 .tab-selected .add-btn {
-  color: #007aff;
+  color: #D7344C;
+}
+.tabbar-custom .tab-selected {
+  color: #D7344C;
 }
 </style>

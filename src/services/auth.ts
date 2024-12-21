@@ -1,4 +1,5 @@
 import { $http } from "@/http/ofetch";
+import { INotification} from '@/type/auth';
 
 
 export const loginApi = async (data: any) => {
@@ -45,6 +46,39 @@ export const getGplx = async (userId: number) => {
 export const getCccd = async (userId: number) => {
   return $http(`/api/v1/cccd/?user_id=${userId}`, {
     method: "GET",
+    headers: {
+      'ngrok-skip-browser-warning': 'true',
+      'User-Agent': 'Custom User-Agent',    
+    },
+  });
+};
+
+export const getQrcode = async (userId: number) => {
+  return $http(`/api/qrcode/?id_qrcode=${userId}`, {
+    method: "GET",
+    headers: {
+      'ngrok-skip-browser-warning': 'true',
+      'User-Agent': 'Custom User-Agent',    
+    },
+    responseType: 'blob',
+  });
+};
+
+export const getNoti = async (userId:number) => {
+  return $http(`/api/notification/?user_id=${userId}`, {
+    method: "GET",
+    headers: {
+      'ngrok-skip-browser-warning': 'true',
+      'User-Agent': 'Custom User-Agent',    
+    },
+  });
+};
+export const PutNoti = async (NotiId:string) => {
+  return $http(`/api/notification/${NotiId}/`, {
+    method: "PUT",
+    body: {
+      is_new: false,
+    },
     headers: {
       'ngrok-skip-browser-warning': 'true',
       'User-Agent': 'Custom User-Agent',    

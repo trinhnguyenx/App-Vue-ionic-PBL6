@@ -1,8 +1,12 @@
 <template>
   <ion-page>
     <ion-content class="ion-padding">
+      <div  v-if="!listData|| Object.keys(listData).length === 0">
+            <div class="loader" v-if="loading"></div>
+        </div>
       <!-- arrowBack -->
-      <div class="back">
+      <div v-else>
+        <div class="back">
         <ion-icon aria-hidden="true" :icon="arrowBack" @click="gotoHome" />
         <p>Căn cước điện tử</p>
       </div>
@@ -88,13 +92,14 @@
           <pre>{{ listData.expire_date || "" }}</pre>
         </div>
       </div>
+      </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { IonCard, IonContent, IonPage } from "@ionic/vue";
+import { IonCard, IonContent, IonPage, IonIcon } from "@ionic/vue";
 import { arrowBack, checkmarkCircle } from "ionicons/icons";
 import { useRouter } from "vue-router";
 import { getCccd } from "@/services/auth";
@@ -102,6 +107,8 @@ import { ICardCCCD } from "@/type/card";
 import { notify } from "@/utils/toast";
 
 const router = useRouter();
+const loading = ref(false);
+
 const gotoHome = async () => {
   router.push("/tabs");
 };
@@ -113,17 +120,19 @@ const listData = ref<ICardCCCD>({} as ICardCCCD);
 
 const userId = localStorage.getItem("id");
 const getCccdData = async () => {
+  loading.value = true;
   try {
     if (userId !== null) {
       const userIdNumber = userId !== null ? parseInt(userId) : NaN;
       const response = await getCccd(userIdNumber);
       listData.value = response[0];
-      console.log("userIdNumber", userIdNumber);
     } else {
       notify.error("Failed to get data BHYT");
     }
   } catch (error) {
     notify.error("Failed to get data BHYT");
+  } finally {
+    loading.value = false;
   }
 };
 </script>
@@ -240,5 +249,80 @@ const getCccdData = async () => {
 }
 .verify ion-icon {
   color: #41a350;
+}
+/* From Uiverse.io by SchawnnahJ */ 
+.loader {
+ position: relative;
+ width: 2.5em;
+ height: 2.5em;
+ transform: rotate(165deg);
+}
+
+.loader:before, .loader:after {
+ content: "";
+ position: absolute;
+ top: 50%;
+ left: 50%;
+ display: block;
+ width: 0.5em;
+ height: 0.5em;
+ border-radius: 0.25em;
+ transform: translate(-50%, -50%);
+}
+
+.loader:before {
+ animation: before8 2s infinite;
+}
+
+.loader:after {
+ animation: after6 2s infinite;
+}
+
+@keyframes before8 {
+ 0% {
+  width: 0.5em;
+  box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
+ }
+
+ 35% {
+  width: 2.5em;
+  box-shadow: 0 -0.5em rgba(225, 20, 98, 0.75), 0 0.5em rgba(111, 202, 220, 0.75);
+ }
+
+ 70% {
+  width: 0.5em;
+  box-shadow: -1em -0.5em rgba(225, 20, 98, 0.75), 1em 0.5em rgba(111, 202, 220, 0.75);
+ }
+
+ 100% {
+  box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
+ }
+}
+
+@keyframes after6 {
+ 0% {
+  height: 0.5em;
+  box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
+ }
+
+ 35% {
+  height: 2.5em;
+  box-shadow: 0.5em 0 rgba(61, 184, 143, 0.75), -0.5em 0 rgba(233, 169, 32, 0.75);
+ }
+
+ 70% {
+  height: 0.5em;
+  box-shadow: 0.5em -1em rgba(61, 184, 143, 0.75), -0.5em 1em rgba(233, 169, 32, 0.75);
+ }
+
+ 100% {
+  box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
+ }
+}
+
+.loader {
+ position: absolute;
+ top: calc(50% - 1.25em);
+ left: calc(50% - 1.25em);
 }
 </style>

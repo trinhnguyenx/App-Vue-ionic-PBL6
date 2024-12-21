@@ -1,12 +1,15 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
-import TabsPage from '../views/TabsPage.vue';
-
 const routes: Array<RouteRecordRaw> = [
 {
     path: '/auth/login',
     name: 'login',
     component: () => import('@/views/auth/login.vue'),
+},
+{
+  path: '/generate-qr',
+  name: 'QRCode',
+  component: () => import('@/views/QrCode.vue'),
 },
 {
   path: '/form/:userId',
@@ -45,7 +48,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/tabs/',
-    component: TabsPage,
+    component: () => import('@/views/TabsPage.vue'),
     children: [
       {
         path: '',
