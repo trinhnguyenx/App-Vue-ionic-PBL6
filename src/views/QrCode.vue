@@ -105,8 +105,8 @@ onMounted(async () => {
   font-size: 14px;
 }
 .card-container {
-  width: 200px;
-  height: 200px;
+  width: 16rem;
+  height: 16rem;
 }
 /* From Uiverse.io by SchawnnahJ */ 
 .loader {

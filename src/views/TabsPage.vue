@@ -18,7 +18,7 @@
           <ion-icon aria-hidden="true" :icon="notifications" />
         </ion-tab-button>
         <ion-tab-button tab="tab5" href="/tabs/settings">
-          <ion-icon aria-hidden="true" :icon="settings" class="bg-white" />
+          <ion-icon aria-hidden="true" :icon="settings" />
         </ion-tab-button>
       </ion-tab-bar>
     </ion-tabs>
@@ -26,11 +26,9 @@
 </template>
 
 <script setup lang="ts">
-import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import {  home, wallet, scanOutline, notifications, settings } from 'ionicons/icons';
+import { IonTabBar, IonTabButton, IonTabs, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
+import {  home, wallet, scanOutline, notifications, settings} from 'ionicons/icons';
 import { useRoute } from 'vue-router';
-import { computed, ref } from 'vue';
-const route = useRoute();
 </script>
 
 <style>
@@ -64,6 +62,9 @@ const route = useRoute();
   color: #D7344C;
 }
 .tabbar-custom .tab-selected {
+  color: #D7344C;
+}
+.add-btn icon-icon {
   color: #D7344C;
 }
 </style>

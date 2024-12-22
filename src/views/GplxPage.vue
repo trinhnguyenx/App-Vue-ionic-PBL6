@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref} from "vue";
-import { Filesystem, Directory} from "@capacitor/filesystem";
+import { onMounted, ref } from "vue";
+import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Camera, CameraResultType } from "@capacitor/camera";
 import { IonPage, IonGrid, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonList, IonItem, IonLabel, IonInput, IonButton, IonAlert, IonContent } from "@ionic/vue";
-import {updloadImages } from "@/services/photoService";
+import { updloadImages } from "@/services/photoService";
 import { notify } from "@/utils/toast";
 import { ICardGPLXCreate } from "@/type/card";
-import { useRouter} from 'vue-router';
+import { useRouter } from 'vue-router';
 import { saveGPLX, updateActiveGPLX } from '@/services/photoService';
 import { alertController } from '@ionic/vue';
 
@@ -17,7 +17,7 @@ const photoList = ref([] as any);
 const directory = Directory.ExternalStorage;
 const rootDir = "DCIM";
 const listData = ref<ICardGPLXCreate | null>(null);
-const showForm = ref(false);    
+const showForm = ref(false);
 const showerror = ref<string | null>(null);
 
 ////////////
@@ -84,7 +84,7 @@ const uploadPhoto = async (image: any) => {
 
     const result = response.text
     listData.value = response.text;
-    if ( response.text && listData.value) {
+    if (response.text && listData.value) {
       name.value = listData.value.name;
       dob.value = listData.value.dob;
       id.value = listData.value.id;
@@ -111,9 +111,9 @@ const uploadPhoto = async (image: any) => {
 };
 ////////////
 const gotohome = async () => {
-    showForm.value = false;
-    localStorage.removeItem('photo');
-    router.push('/tabs');
+  showForm.value = false;
+  localStorage.removeItem('photo');
+  router.push('/tabs');
 };
 const userId: number = parseInt(localStorage.getItem('id') || '0', 10);
 
@@ -139,15 +139,15 @@ const saveForm = async () => {
       user: userId
     };
 
-      await saveGPLX(listData.value);
-      setTimeout( async () => {
-        await updateActiveGPLX(userId);
-        localStorage.setItem('is_gplx', 'true');
-      }, 2000);
-      notify.success('Dữ liệu đã được lưu thành công');
-      setTimeout(() => {
-        router.push('/tabs');
-      }, 1000);
+    await saveGPLX(listData.value);
+    setTimeout(async () => {
+      await updateActiveGPLX(userId);
+      localStorage.setItem('is_gplx', 'true');
+    }, 2000);
+    notify.success('Dữ liệu đã được lưu thành công');
+    setTimeout(() => {
+      router.push('/tabs');
+    }, 1000);
   } catch (error) {
     console.error('Lỗi khi lưu dữ liệu:', error);
     notify.error(`Lỗi xảy ra, vui lòng thử lại. ${error}`);
@@ -182,17 +182,17 @@ const presentAlert = async () => {
 onMounted(() => {
   const photoCaptured = localStorage.getItem('photo');
 
-if (photoCaptured !== 'true') {
-  presentAlert();
-} else {
-  showForm.value = true;
-}
+  if (photoCaptured !== 'true') {
+    presentAlert();
+  } else {
+    showForm.value = true;
+  }
 });
 </script>
 
 <template>
   <ion-page>
-        <IonContent class="ion-padding" v-if="showForm">
+    <IonContent class="ion-padding" v-if="showForm">
       <IonGrid class="ion-no-padding">
         <IonCard>
           <IonCardHeader>
@@ -223,12 +223,12 @@ if (photoCaptured !== 'true') {
 
               <IonItem lines="full">
                 <IonLabel position="stacked">Origin Place:</IonLabel>
-                <IonInput v-model="origin_place"  clear-input></IonInput>
+                <IonInput v-model="origin_place" clear-input></IonInput>
               </IonItem>
 
               <IonItem lines="full">
                 <IonLabel position="stacked">IPlace:</IonLabel>
-                <IonInput v-model="iplace"  clear-input></IonInput>
+                <IonInput v-model="iplace" clear-input></IonInput>
               </IonItem>
 
               <IonItem lines="full">
@@ -257,7 +257,7 @@ if (photoCaptured !== 'true') {
           </IonCardContent>
         </IonCard>
       </IonGrid>
-    </IonContent>    
+    </IonContent>
   </ion-page>
 </template>
 
