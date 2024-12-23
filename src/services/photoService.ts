@@ -1,5 +1,5 @@
 import { $http, $httpcamera } from "@/http/ofetch";
-import { ICard, ICardBHYTCreate, ICardCCCDCreate, ICardGPLXCreate } from "@/type/card";
+import { ICard, ICardBHYTCreate, ICardCCCDCreate, ICardGPLXCreate,ICardCCCD, ICardGPLX } from "@/type/card";
 
 export const loginApi = async (data: any) => {
   return $http('/api/login/', {
@@ -19,9 +19,21 @@ export const saveCCCD = async (data: ICardCCCDCreate) => {
     body: data,
   });
 }
+export const updateCCCD = async (data: ICardCCCDCreate, uuid: string) => {
+  return $http(`/api/v1/cccd/${uuid}/`, {
+    method: "PUT",
+    body: data,
+  });
+}
 export const saveGPLX = async (data: ICardGPLXCreate) => {
   return $http('/api/v1/gplx/', {
     method: 'POST',
+    body: data,
+  });
+}
+export const updateGPLX = async (data: ICardGPLX, uuid: string) => {
+  return $http(`/api/v1/gplx/${uuid}/`, {
+    method: "PUT",
     body: data,
   });
 }

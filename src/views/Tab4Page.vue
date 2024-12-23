@@ -2,8 +2,7 @@
   <ion-page>
 
     <ion-content>
-      <div class="loader" v-if="loading"></div>
-      <div v-else>
+      <div>
         <ion-header>
           <ion-toolbar>
             <ion-title>Thông báo</ion-title>
@@ -57,6 +56,7 @@ import { INotification } from "@/type/auth";
 import { getNoti, PutNoti } from "@/services/auth";
 import { stopwatchOutline } from "ionicons/icons";
 import { notify } from "@/utils/toast";
+import router from "@/router";
 
 const userId = localStorage.getItem("id");
 const listdata = ref<INotification[]>([]);
@@ -79,10 +79,26 @@ const getListNoti = async () => {
 const markAsRead = async (notification: INotification) => {
   if (!notification.is_new) return;
   try {
-    await PutNoti(notification.uuid);
-    notification.is_new = false;
+    if(!notification.is_expired) {
+      await PutNoti(notification.uuid);
+      notification.is_new = false;
+    } else {
+      notification.is_new = false;
+      await PutNoti(notification.uuid);
+      localStorage.setItem('is_update', 'true');
+      const userId = localStorage.getItem('id');
+      if(notification.type === 'cccd') {
+      router.push({ name: 'FormPage', params: { userId: userId } });
+      }
+      else if(notification.type === 'gplx') {
+        router.push('/verify-gplx');
+      }
+      else {
+        router.push('/verify-bhyt');
+      }
+    }
   } catch (error) {
-    notify.error("Lỗi khi cập nhật thông báo.");
+    notify.error(`${{ error }}`);
   }
 };
 const doRefresh = async (event: any) => {
@@ -222,82 +238,5 @@ ion-title {
 }
 ion-header {
   border-bottom: 1px solid #ddd;
-}
-
-/* From Uiverse.io by SchawnnahJ */
-.loader {
-  position: relative;
-  width: 2.5em;
-  height: 2.5em;
-  transform: rotate(165deg);
-}
-
-.loader:before,
-.loader:after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  display: block;
-  width: 0.5em;
-  height: 0.5em;
-  border-radius: 0.25em;
-  transform: translate(-50%, -50%);
-}
-
-.loader:before {
-  animation: before8 2s infinite;
-}
-
-.loader:after {
-  animation: after6 2s infinite;
-}
-
-@keyframes before8 {
-  0% {
-    width: 0.5em;
-    box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
-  }
-
-  35% {
-    width: 2.5em;
-    box-shadow: 0 -0.5em rgba(225, 20, 98, 0.75), 0 0.5em rgba(111, 202, 220, 0.75);
-  }
-
-  70% {
-    width: 0.5em;
-    box-shadow: -1em -0.5em rgba(225, 20, 98, 0.75), 1em 0.5em rgba(111, 202, 220, 0.75);
-  }
-
-  100% {
-    box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
-  }
-}
-
-@keyframes after6 {
-  0% {
-    height: 0.5em;
-    box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
-  }
-
-  35% {
-    height: 2.5em;
-    box-shadow: 0.5em 0 rgba(61, 184, 143, 0.75), -0.5em 0 rgba(233, 169, 32, 0.75);
-  }
-
-  70% {
-    height: 0.5em;
-    box-shadow: 0.5em -1em rgba(61, 184, 143, 0.75), -0.5em 1em rgba(233, 169, 32, 0.75);
-  }
-
-  100% {
-    box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
-  }
-}
-
-.loader {
-  position: absolute;
-  top: calc(50% - 1.25em);
-  left: calc(50% - 1.25em);
 }
 </style>

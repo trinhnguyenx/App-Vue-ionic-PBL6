@@ -20,5 +20,7 @@ export interface INotification {
     created_at: string;
     user_id: number;
     is_new: boolean;
+    is_expired: boolean;
+    type: string;
 }
 

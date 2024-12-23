@@ -3,15 +3,17 @@
     <div class="loader" v-if="loading"></div>
     <ion-content class="ion-padding" v-else>
       <ion-header>
-      <ion-toolbar>
-        <div class="back">
-                    <ion-icon aria-hidden="true" :icon="arrowBack" @click="gotoHome" />
-                    <ion-title>Scan</ion-title>
-        </div>
-      </ion-toolbar>
-    </ion-header>
-      <p v-if="scanResult">Scan Result:</p>
-      <pre v-if="scanResult">{{ handleScanData(scanResult) }}</pre>
+        <ion-toolbar>
+          <div class="back">
+            <ion-icon aria-hidden="true" :icon="arrowBack" @click="gotoHome" />
+            <ion-title>Scan</ion-title>
+          </div>
+        </ion-toolbar>
+      </ion-header>
+      <div class="scan-result" v-if="scanResult">
+        <h2>Kết quả quét:</h2>
+        <pre>{{ handleScanData(scanResult) }}</pre>
+      </div>
     </ion-content>
   </ion-page>
 </template>
@@ -49,7 +51,35 @@ const startScanning = async () => {
 };
 
 const handleScanData = (data: string) => {
-  return data.split(',').join('\n');
+  const regex = /Số CCCD:\s?(.+?),\s?Họ tên:\s?(.+?),\s?Ngày Sinh:\s?(.+?),\s?Quốc tịch:\s?(.+?),\s?Giới tính:\s?(.+?),\s?Ngày cấp:\s?(.+?),\s?Nơi cấp:\s?(.+?),\s?Ngày hết hạn:\s?(.+)/;
+  const match = data.match(regex);
+
+  if (match) {
+    const [
+      , // Ignore full match
+      cccd,
+      fullName,
+      dob,
+      nationality,
+      gender,
+      issueDate,
+      issuePlace,
+      expiryDate,
+    ] = match;
+
+    return `
+      Số CCCD: ${cccd}
+      Họ tên: ${fullName}
+      Ngày Sinh: ${dob}
+      Quốc tịch: ${nationality}
+      Giới tính: ${gender}
+      Ngày cấp: ${issueDate}
+      Nơi cấp: ${issuePlace}
+      Ngày hết hạn: ${expiryDate}
+    `;
+  }
+
+  return "Dữ liệu không hợp lệ.";
 };
 const presentAlert = async () => {
   const alert = await alertController.create({
@@ -101,6 +131,31 @@ onMounted(() => {
     align-items: center;
     padding: 0 10px;
 }
+.scan-result {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.scan-result h2 {
+  font-size: 1.25rem;
+  margin-bottom: 10px;
+  color: #626ae4;
+}
+
+pre {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #333;
+  white-space: pre-wrap;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
 .loader {
  position: relative;
  width: 2.5em;

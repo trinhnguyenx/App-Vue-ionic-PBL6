@@ -34,7 +34,7 @@ const handleLogin = async () => {
       localStorage.setItem('is_bhyt', loginData.value.is_bhyt.toString());
       localStorage.setItem('is_gplx', loginData.value.is_gplx.toString());
       localStorage.setItem('is_verified', loginData.value.is_verified.toString());
-      localStorage.setItem('is_scan', 'true');
+      localStorage.setItem('is_update', 'false');
         if (loginData.value.is_verified) {
         router.push('/tabs'); 
         } else {

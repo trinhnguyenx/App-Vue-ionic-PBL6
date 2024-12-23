@@ -24,11 +24,10 @@ export interface ICardBHYTCreate {
     user: number
 }
 export interface ICardGPLX {
-    uuid: string
+    uuid?: string
     id: string
     name: string
     dob: string
-    gender: string
     iplace: string
     origin_place: string
     issue_date: string

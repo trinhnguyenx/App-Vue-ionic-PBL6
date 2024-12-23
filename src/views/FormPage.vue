@@ -20,12 +20,12 @@ import {
 
 import { updloadImages } from "@/services/photoService";
 import { notify } from "@/utils/toast";
-import { ICardCCCDCreate, ICardCCCDBehind } from "@/type/card";
+import { ICardCCCDCreate, ICardCCCDBehind,ICardCCCD } from "@/type/card";
 import { useRouter, useRoute } from "vue-router";
-import { saveCCCD } from "@/services/photoService";
+import { saveCCCD,updateCCCD } from "@/services/photoService";
 import { updateActive } from "@/services/auth";
 import { alertController } from "@ionic/vue";
-
+import {getCccd} from "@/services/auth";
 
 const router = useRouter();
 const route = useRoute();
@@ -86,8 +86,10 @@ const readPhoto = async (fileName: string) => {
   return `data:image/jpeg;base64,${file.data}`;
 };
 
+const loading = ref(false);
 const uploadPhoto = async (image: any) => {
   try {
+    loading.value = true;
     const fileData = await Filesystem.readFile({
       path: image.path || image.webPath,
     });
@@ -120,7 +122,7 @@ const uploadPhoto = async (image: any) => {
     } else {
       notify.error("Không thể xác thực thông tin từ ảnh. Vui lòng thử lại.");
     }
-
+    loading.value = false;
     setTimeout(async () => {
       if (isFront.value) {
         isFront.value = false;
@@ -136,6 +138,7 @@ const uploadPhoto = async (image: any) => {
 ////////////
 const uploadPhotoBehind = async (image: any) => {
   try {
+    loading.value = true;
     const fileData = await Filesystem.readFile({
       path: image.path || image.webPath,
     });
@@ -162,12 +165,27 @@ const uploadPhotoBehind = async (image: any) => {
 
     setTimeout(() => {
       showForm.value = true;
-    }, 1500);
+    }, 1000);
   } catch (error) {
     notify.error(`${error}`);
+  } finally {
+    loading.value = false;
   }
 
 }
+const dataCCCD = ref<ICardCCCD | null>(null);
+const getCccdData = async () => {
+  try {
+    if (userId !== null) {
+      const response = await getCccd(userId.value);
+      dataCCCD.value = response[0];
+    } else {
+      notify.error("Failed to get data BHYT");
+    }
+  } catch (error) {
+    notify.error("Failed to get data BHYT");
+  }
+};
 
 const saveForm = async () => {
   try {
@@ -191,7 +209,8 @@ const saveForm = async () => {
       user: userId.value,
     };
 
-    await saveCCCD(listData.value);
+    if(localStorage.getItem('is_update') === 'false') {
+      await saveCCCD(listData.value);
     setTimeout(async () => {
       await updateActive(name.value, userId.value);
       localStorage.setItem("is_verified", "true");
@@ -200,6 +219,19 @@ const saveForm = async () => {
     setTimeout(() => {
       router.push("/tabs");
     }, 1000);
+    } else {
+      await getCccdData();
+      if (dataCCCD.value) {
+        await updateCCCD(listData.value, dataCCCD.value.uuid);
+        notify.success("Dữ liệu đã được cập nhật thành công");
+        localStorage.setItem("is_update", "false");
+    setTimeout(() => {
+      router.push("/tabs");
+    }, 1000);
+      } else {
+        notify.error("Dữ liệu CCCD không tồn tại.");
+      }
+    }
   } catch (error) {
     console.error("Lỗi khi lưu dữ liệu:", userId.value);
     notify.error(`Lỗi xảy ra, vui lòng thử lại. ${error}`);
@@ -208,11 +240,11 @@ const saveForm = async () => {
 
 
 //////////////
-
+const isUpdate = !(localStorage.getItem("is_update") === "true");
 const presentAlert = async () => {
   const alert = await alertController.create({
-    header: "Xác thực Căn Cước Công Dân",
-    message: "Bạn cần xác thực tài khoản bằng CCCD",
+    header: isUpdate ? "Xác thực Căn Cước Công Dân" : "Cập nhật Căn Cước Công Dân",
+    message: isUpdate ? "Bạn cần xác thực tài khoản bằng CCCD" : "Bạn cần cập nhật thông tin CCCD",
     buttons: [
       {
         text: "Ok",
@@ -236,8 +268,8 @@ const presentAlert = async () => {
 
 const presentAlertBehind = async () => {
   const alert = await alertController.create({
-    header: "Xác thực Căn Cước Công Dân",
-    message: "Bạn cần chụp mặt sau của CCCD",
+    header: isUpdate ? "Xác thực Căn Cước Công Dân" : "Cập nhật Căn Cước Công Dân",
+    message: isUpdate ? "Bạn cần chụp mặt sau của CCCD" : "Bạn cần cập nhật thông tin của CCCD",
     buttons: [
       {
         text: "Ok",
@@ -268,7 +300,10 @@ onMounted(() => {
 <template>
   <ion-page>
     <!-- Popup Alert -->
-    <IonContent class="ion-padding" v-if="showForm">
+    <div class="loader" v-if="loading"></div>
+      
+    <IonContent v-else>
+      <IonContent class="ion-padding" v-if="showForm">
       <IonGrid class="ion-no-padding">
         <IonCard>
           <IonCardHeader>
@@ -327,6 +362,7 @@ onMounted(() => {
         </IonCard>
       </IonGrid>
     </IonContent>
+    </IonContent>
   </ion-page>
 </template>
 
@@ -362,5 +398,80 @@ ion-button {
 ion-alert {
   width: 80%;
   margin-left: 10%;
+}
+/* From Uiverse.io by SchawnnahJ */ 
+.loader {
+ position: relative;
+ width: 2.5em;
+ height: 2.5em;
+ transform: rotate(165deg);
+}
+
+.loader:before, .loader:after {
+ content: "";
+ position: absolute;
+ top: 50%;
+ left: 50%;
+ display: block;
+ width: 0.5em;
+ height: 0.5em;
+ border-radius: 0.25em;
+ transform: translate(-50%, -50%);
+}
+
+.loader:before {
+ animation: before8 2s infinite;
+}
+
+.loader:after {
+ animation: after6 2s infinite;
+}
+
+@keyframes before8 {
+ 0% {
+  width: 0.5em;
+  box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
+ }
+
+ 35% {
+  width: 2.5em;
+  box-shadow: 0 -0.5em rgba(225, 20, 98, 0.75), 0 0.5em rgba(111, 202, 220, 0.75);
+ }
+
+ 70% {
+  width: 0.5em;
+  box-shadow: -1em -0.5em rgba(225, 20, 98, 0.75), 1em 0.5em rgba(111, 202, 220, 0.75);
+ }
+
+ 100% {
+  box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
+ }
+}
+
+@keyframes after6 {
+ 0% {
+  height: 0.5em;
+  box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
+ }
+
+ 35% {
+  height: 2.5em;
+  box-shadow: 0.5em 0 rgba(61, 184, 143, 0.75), -0.5em 0 rgba(233, 169, 32, 0.75);
+ }
+
+ 70% {
+  height: 0.5em;
+  box-shadow: 0.5em -1em rgba(61, 184, 143, 0.75), -0.5em 1em rgba(233, 169, 32, 0.75);
+ }
+
+ 100% {
+  box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
+ }
+}
+
+.loader {
+ position: absolute;
+ top: calc(50% - 1.25em);
+ left: calc(50% - 1.25em);
 }
 </style>
