@@ -1,5 +1,5 @@
 export interface ICardBHYT {
-    uuid: string
+    uuid?: string
     id: string
     name: string
     dob: string
@@ -21,6 +21,8 @@ export interface ICardBHYTCreate {
     type: string
     expire_date: string
     ihos: string
+    is_valid: boolean
+    images: string
     user: number
 }
 export interface ICardGPLX {
@@ -49,6 +51,8 @@ export interface ICardGPLXCreate {
     nationality: string
     level: string
     type: string
+    is_valid: boolean
+    images: string
     user: number
 
 }
@@ -64,10 +68,13 @@ export interface ICardCCCD {
     type: string
     expire_date: string
     nationality: string
+    personal_identifi: string
     user: number
 }
 export interface ICardCCCDBehind {
     issue_date: string
+    id_ : string
+    personal_identifi: string
 }
 
 export interface ICardCCCDCreate {
@@ -81,6 +88,10 @@ export interface ICardCCCDCreate {
     type: string
     expire_date: string
     nationality: string
+    is_valid: boolean
+    personal_identifi: string
+    images: string
+    images_behind: string
     user: number
 }
 export interface ICardBHYT {

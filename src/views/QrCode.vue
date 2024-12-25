@@ -31,6 +31,8 @@ import { notify } from "@/utils/toast";
 import { getQrcode } from "@/services/auth";
 import { arrowBack } from "ionicons/icons";
 import { useRouter } from "vue-router";
+import { onIonViewWillEnter } from "@ionic/vue";
+
 const router = useRouter();
 
 
@@ -64,7 +66,7 @@ const getImagesQr = async () => {
   }
 };
 
-onMounted(async () => {
+onIonViewWillEnter(async () => {
     await getImagesQr();
 });
 </script>

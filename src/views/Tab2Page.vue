@@ -1,5 +1,5 @@
 <template>
-  <ion-page :key="pageKey">
+  <ion-page>
     <div class="loader" v-if="loading"></div>
     <ion-content class="ion-padding" v-else>
       <ion-header>
@@ -26,6 +26,7 @@ import { IonPage, IonContent, IonHeader, IonToolbar, IonTitle, IonIcon } from '@
 import { alertController } from "@ionic/vue";
 import { useRouter } from "vue-router";
 import { arrowBack} from 'ionicons/icons';
+import { onIonViewWillEnter } from "@ionic/vue";
 
 
 const router = useRouter();
@@ -81,48 +82,14 @@ const handleScanData = (data: string) => {
 
   return "Dữ liệu không hợp lệ.";
 };
-const presentAlert = async () => {
-  const alert = await alertController.create({
-    header: "Xác nhận quét QR code",
-    buttons: [
-      {
-        text: "Ok",
-        handler: () => {
-          console.log("Ok button clicked");
-          startScanning();
-        },
-      },
-      {
-        text: "Cancel",
-        role: "cancel",
-        handler: () => {
-          router.push("/tabs");
-        },
-      },
-    ],
-  });
-
-  await alert.present();
-};
 const gotoHome = async () => {
-  // Reset trạng thái quét
   scanResult.value = null;
-  loading.value = false; // Đảm bảo loading được tắt
-  // Dùng router.push để điều hướng đến trang /tabs và force reload lại trang scan
-  router.push('/tabs').then(() => {
-    pageKey.value = Date.now(); // Đổi giá trị key để force reload trang scan
-    router.push('/scan'); // Quay lại trang scan sau khi đã chuyển sang /tabs
-  });
+  loading.value = false;
+  router.push('/tabs')
 };
-watch(() => router.currentRoute, () => {
-  // Đổi key mỗi khi route thay đổi để force reload trang
-  pageKey.value = Date.now();
-});
 
-onMounted(() => {
-  if(localStorage.getItem('is_scan') === 'true') {
-    presentAlert();
-  }
+onIonViewWillEnter(() => {
+    startScanning();
 });
 </script>
 <style scoped>

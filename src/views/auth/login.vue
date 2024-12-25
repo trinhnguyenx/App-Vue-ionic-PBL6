@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter} from 'vue-router';
+import { useRouter } from 'vue-router';
 import InputText from 'primevue/inputtext';
 import InputGroup from 'primevue/inputgroup';
 import InputGroupAddon from 'primevue/inputgroupaddon';
@@ -20,14 +20,12 @@ const loading = ref(false);
 const handleLogin = async () => {
   loading.value = true;
   try {
-      loginData.value = await loginApi({
+    loginData.value = await loginApi({
       username: username.value,
       password: password.value,
     });
-      if (loginData.value) {
-        console.log(loginData.value.id);
-      }
     if (loginData.value) {
+      localStorage.clear();
       localStorage.setItem('token', loginData.value.accessToken);
       localStorage.setItem('name', loginData.value.fullname);
       localStorage.setItem('id', loginData.value.id.toString());
@@ -35,10 +33,10 @@ const handleLogin = async () => {
       localStorage.setItem('is_gplx', loginData.value.is_gplx.toString());
       localStorage.setItem('is_verified', loginData.value.is_verified.toString());
       localStorage.setItem('is_update', 'false');
-        if (loginData.value.is_verified) {
-        router.push('/tabs'); 
-        } else {
-          router.push({ name: 'FormPage', params: { userId: loginData.value.id } });
+      if (loginData.value.is_verified) {
+        router.push('/tabs');
+      } else {
+        router.push({ name: 'FormPage', params: { userId: loginData.value.id } });
       }
     } else {
       notify.error("Login failed, please try again.");
@@ -50,8 +48,6 @@ const handleLogin = async () => {
     loading.value = false;
   }
 };
-
-
 </script>
 
 
@@ -83,7 +79,8 @@ const handleLogin = async () => {
                 <InputText v-model="password" type="password" placeholder="******" class="bg-white text-black" />
               </InputGroup>
             </div>
-            <Button :loading="loading" class=" button-login mt-10 h-14 w-full rounded-full" @click="handleLogin" label="Đăng nhập" />
+            <Button :loading="loading" class=" button-login mt-10 h-14 w-full rounded-full" @click="handleLogin"
+              label="Đăng nhập" />
             <p class="text-center mt-5">Chưa có tài khoản?
               <router-link to="/auth/register" class="button-dk">Đăng ký</router-link>
             </p>
@@ -96,30 +93,33 @@ const handleLogin = async () => {
 
 <style scoped>
 .custom-input {
-  background-color: white !important; 
-  color: white !important; 
+  background-color: white !important;
+  color: white !important;
 }
 
 .custom-icon-bg {
   background-color: white !important;
-  padding: 0.5rem; 
-  border-radius: 4px; 
+  padding: 0.5rem;
+  border-radius: 4px;
 }
 
 .custom-icon-color {
-  color: black !important; 
+  color: black !important;
   font-size: 1.2rem;
 }
+
 .button-login {
   background-color: #D7344C !important;
   border-color: #D7344C !important;
 }
+
 .button-dk {
   color: #D7344C !important;
   font-weight: bold;
 }
+
 .zoom {
-    transform: scale(1.5);  
-    transform-origin: center center;
-  }
+  transform: scale(1.5);
+  transform-origin: center center;
+}
 </style>

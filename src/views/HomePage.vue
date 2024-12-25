@@ -264,9 +264,10 @@
 
 <script setup lang="ts">
 import { IonButton, IonPage, IonIcon} from '@ionic/vue';
-import { ref, onMounted } from 'vue';
+import { ref} from 'vue';
 import { useRouter } from 'vue-router';
 import { newspaperOutline, calendarClearOutline, warningOutline } from 'ionicons/icons';
+import { onIonViewWillEnter } from "@ionic/vue";
 
 const router = useRouter();
 const isLoading = ref(true)
@@ -287,13 +288,12 @@ const gotobhyt = async () => {
 const gotoQR = async () => {
     router.push('/generate-qr');
 };
-
-const fullname = ref<string>(localStorage.getItem('name') || 'Tên Người Dùng');
-
-onMounted(() => {
+const fullname = ref('')
+onIonViewWillEnter(() => {
+fullname.value = localStorage.getItem('name') || 'NGUYỄN CÔNG TRÌNH';
   setTimeout(() => {
     isLoading.value = false;
-  }, 2000); 
+  }, 1000); 
 });
 
 </script>

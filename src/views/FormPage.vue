@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from "vue";
+import { ref } from "vue";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Camera, CameraResultType } from "@capacitor/camera";
 import {
@@ -14,8 +14,8 @@ import {
   IonLabel,
   IonInput,
   IonButton,
-  IonAlert,
   IonContent,
+  IonCheckbox,
 } from "@ionic/vue";
 
 import { updloadImages } from "@/services/photoService";
@@ -26,6 +26,8 @@ import { saveCCCD,updateCCCD } from "@/services/photoService";
 import { updateActive } from "@/services/auth";
 import { alertController } from "@ionic/vue";
 import {getCccd} from "@/services/auth";
+import { onIonViewWillEnter } from "@ionic/vue";
+import {uploadImageToFireBase} from "../services/firebaseService";
 
 const router = useRouter();
 const route = useRoute();
@@ -38,8 +40,11 @@ const dataBehind = ref<ICardCCCDBehind | null>(null);;
 const showForm = ref(false);
 const userId = ref(0);
 const isFront = ref(true);
-
-
+const loading = ref(false);
+const isValid = ref<null | boolean>(null); 
+const idbehind = ref("");
+const images = ref("");
+const imagesBehind = ref("");
 ////////////
 const dob = ref("");
 const nationality = ref("");
@@ -51,9 +56,10 @@ const originPlace = ref("");
 const currentPlace = ref("");
 const issueDate = ref("");
 const type = ref("CCCD");
+const personal_identifi = ref("");
 const user = ref("");
 //////////////
-
+const isUpdate = !(localStorage.getItem("is_update") === "true");
 const takePhoto = async () => {
   try {
     const image = await Camera.getPhoto({
@@ -86,7 +92,6 @@ const readPhoto = async (fileName: string) => {
   return `data:image/jpeg;base64,${file.data}`;
 };
 
-const loading = ref(false);
 const uploadPhoto = async (image: any) => {
   try {
     loading.value = true;
@@ -98,6 +103,10 @@ const uploadPhoto = async (image: any) => {
     const byteNumbers = new Uint8Array(
       fileContent.split("").map((char) => char.charCodeAt(0))
     );
+    // firebase
+    const file = new Blob([byteNumbers], { type: image.format });
+    images.value = (await uploadImageToFireBase(file, 'cccdmattruoc', userId.value)) || '';
+    //
 
     const formData = new FormData();
     formData.append(
@@ -111,16 +120,17 @@ const uploadPhoto = async (image: any) => {
     const result = response.text;
     listData.value = response.text;
     if (response.text && listData.value) {
-      dob.value = listData.value.dob;
-      nationality.value = listData.value.nationality;
-      id.value = listData.value.id;
-      name.value = listData.value.name;
-      gender.value = listData.value.gender;
-      expireDate.value = listData.value.expire_date;
-      originPlace.value = listData.value.origin_place;
-      currentPlace.value = listData.value.current_place;
+      dob.value = listData.value.dob || "";
+      nationality.value = listData.value.nationality || "";
+      id.value = handleSpace(listData.value.id) || "";
+      name.value = listData.value.name || "";
+      gender.value = listData.value.gender || "";
+      expireDate.value = listData.value.expire_date || "";
+      originPlace.value = listData.value.origin_place || "";
+      currentPlace.value = listData.value.current_place || "";
     } else {
       notify.error("Không thể xác thực thông tin từ ảnh. Vui lòng thử lại.");
+      console.error("Không thể xác thực thông tin từ ảnh. Vui lòng thử lại.");
     }
     loading.value = false;
     setTimeout(async () => {
@@ -128,11 +138,12 @@ const uploadPhoto = async (image: any) => {
         isFront.value = false;
         presentAlertBehind()
       }
-    }, 1500);
+    }, 1000);
 
     return result;
   } catch (error) {
     notify.error(`Lỗi khi tải ảnh: ${error}`);
+    console.error(`Lỗi khi tải ảnh: ${error}`);
   }
 };
 ////////////
@@ -147,7 +158,10 @@ const uploadPhotoBehind = async (image: any) => {
     const byteNumbers = new Uint8Array(
       fileContent.split("").map((char) => char.charCodeAt(0))
     );
-
+    // firebase
+    const file = new Blob([byteNumbers], { type: image.format });
+    imagesBehind.value = (await uploadImageToFireBase(file, 'cccdmatsau', userId.value)) || '';
+    //
     const formData = new FormData();
     formData.append(
       "file",
@@ -159,6 +173,19 @@ const uploadPhotoBehind = async (image: any) => {
     dataBehind.value = response.text;
     if (response.text && dataBehind.value) {
       issueDate.value = dataBehind.value.issue_date;
+      idbehind.value = handleSpace(dataBehind.value.id_);
+      personal_identifi.value = dataBehind.value.personal_identifi;
+      if (listData.value) {
+        listData.value.personal_identifi = personal_identifi.value;
+      }
+        if( isUpdate && id.value !== idbehind.value) {
+          notify.error("Số CCCD mặt sau không trùng khớp. Vui lòng thử lại.");
+          
+          setTimeout(() => {
+            router.push("/auth/login"); 
+            showForm.value = false;
+          }, 1000);
+        }
     } else {
       notify.error("Không thể xác thực thông tin từ ảnh mặt sau. Vui lòng thử lại.");
     }
@@ -173,6 +200,16 @@ const uploadPhotoBehind = async (image: any) => {
   }
 
 }
+////////////
+const handleCheckboxChange = (type: string) => {
+  if (type === 'correct') {
+    isValid.value = true; 
+  } else if (type === 'incorrect') {
+    isValid.value = false;
+  }
+};
+
+////////////
 const dataCCCD = ref<ICardCCCD | null>(null);
 const getCccdData = async () => {
   try {
@@ -186,6 +223,9 @@ const getCccdData = async () => {
     notify.error("Failed to get data BHYT");
   }
 };
+const handleSpace = (item: string) => {
+    return item.replace(/\s+/g, "")
+}
 
 const saveForm = async () => {
   try {
@@ -198,7 +238,7 @@ const saveForm = async () => {
     listData.value = {
       dob: dob.value,
       nationality: nationality.value,
-      id: id.value,
+      id: handleSpace(id.value),
       name: name.value,
       gender: gender.value,
       expire_date: expireDate.value,
@@ -206,6 +246,10 @@ const saveForm = async () => {
       origin_place: originPlace.value,
       current_place: currentPlace.value,
       issue_date: issueDate.value,
+      personal_identifi: personal_identifi.value,
+      is_valid: isValid.value ?? false,
+      images: images.value,
+      images_behind: imagesBehind.value,
       user: userId.value,
     };
 
@@ -223,11 +267,13 @@ const saveForm = async () => {
       await getCccdData();
       if (dataCCCD.value) {
         await updateCCCD(listData.value, dataCCCD.value.uuid);
-        notify.success("Dữ liệu đã được cập nhật thành công");
+        // notify.success("Dữ liệu đã được cập nhật thành công");
+        notify.success(`${isValid.value}`)
         localStorage.setItem("is_update", "false");
     setTimeout(() => {
       router.push("/tabs");
     }, 1000);
+    showForm.value = false;
       } else {
         notify.error("Dữ liệu CCCD không tồn tại.");
       }
@@ -240,7 +286,6 @@ const saveForm = async () => {
 
 
 //////////////
-const isUpdate = !(localStorage.getItem("is_update") === "true");
 const presentAlert = async () => {
   const alert = await alertController.create({
     header: isUpdate ? "Xác thực Căn Cước Công Dân" : "Cập nhật Căn Cước Công Dân",
@@ -269,7 +314,7 @@ const presentAlert = async () => {
 const presentAlertBehind = async () => {
   const alert = await alertController.create({
     header: isUpdate ? "Xác thực Căn Cước Công Dân" : "Cập nhật Căn Cước Công Dân",
-    message: isUpdate ? "Bạn cần chụp mặt sau của CCCD" : "Bạn cần cập nhật thông tin của CCCD",
+    message: isUpdate ? "Bạn cần chụp mặt sau của CCCD" : "Bạn cần cập nhật thông tin mặt sau của CCCD",
     buttons: [
       {
         text: "Ok",
@@ -286,12 +331,12 @@ const presentAlertBehind = async () => {
         },
       },
     ],
+    cssClass: 'custom-alert'
   });
 
   await alert.present();
 };
-
-onMounted(() => {
+onIonViewWillEnter(() => {
   userId.value = Number(route.params.userId);
   presentAlert();
 });
@@ -307,52 +352,64 @@ onMounted(() => {
       <IonGrid class="ion-no-padding">
         <IonCard>
           <IonCardHeader>
-            <IonCardTitle>Thông tin thẻ CCCD</IonCardTitle>
+            <IonCardTitle>Card Information</IonCardTitle>
           </IonCardHeader>
 
           <IonCardContent>
             <IonList>
               <IonItem lines="full">
-                <IonLabel position="stacked">Full Name:</IonLabel>
-                <IonInput v-model="name" placeholder="Nhập họ và tên" clear-input></IonInput>
+                <IonLabel position="stacked">Full Name</IonLabel>
+                <IonInput v-model="name"  readonly></IonInput>
               </IonItem>
 
               <IonItem lines="full">
-                <IonLabel position="stacked">Card Number:</IonLabel>
-                <IonInput v-model="id" placeholder="Nhập số thẻ" clear-input></IonInput>
+                <IonLabel position="stacked">Card Number</IonLabel>
+                <IonInput v-model="id"  readonly></IonInput>
               </IonItem>
 
               <IonItem lines="full">
-                <IonLabel position="stacked">Birthday:</IonLabel>
-                <IonInput v-model="dob" placeholder="Nhập ngày sinh" clear-input>
+                <IonLabel position="stacked">Birthday</IonLabel>
+                <IonInput v-model="dob" readonly>
                 </IonInput>
               </IonItem>
 
               <IonItem lines="full">
-                <IonLabel position="stacked">Nationality:</IonLabel>
-                <IonInput v-model="nationality" placeholder="Nhập quốc tịch" clear-input></IonInput>
+                <IonLabel position="stacked">Nationality</IonLabel>
+                <IonInput v-model="nationality" readonly></IonInput>
               </IonItem>
 
               <IonItem lines="full">
-                <IonLabel position="stacked">Issued by:</IonLabel>
-                <IonInput v-model="originPlace" placeholder="Nhập nơi cấp" clear-input></IonInput>
+                <IonLabel position="stacked">Issued by</IonLabel>
+                <IonInput v-model="originPlace" readonly></IonInput>
               </IonItem>
 
               <IonItem lines="full">
-                <IonLabel position="stacked">Gender:</IonLabel>
-                <IonInput v-model="gender" placeholder="Nhập giới tính" clear-input></IonInput>
+                <IonLabel position="stacked">Gender</IonLabel>
+                <IonInput v-model="gender"  readonly></IonInput>
               </IonItem>
 
               <IonItem lines="full">
-                <IonLabel position="stacked">Expire Date:</IonLabel>
-                <IonInput v-model="expireDate" placeholder="Ngày hết hạn" clear-input></IonInput>
+                <IonLabel position="stacked">Expire Date</IonLabel>
+                <IonInput v-model="expireDate" readonly></IonInput>
               </IonItem>
 
               <IonItem lines="full">
-                <IonLabel position="stacked">Issue Date:</IonLabel>
-                <IonInput v-model="issueDate" placeholder="Ngày cấp" clear-input></IonInput>
+                <IonLabel position="stacked">Issue Date</IonLabel>
+                <IonInput v-model="issueDate" readonly></IonInput>
               </IonItem>
-
+              <IonItem lines="full">
+                <IonLabel position="stacked">Identifying Characteristics</IonLabel>
+                <IonInput v-model="personal_identifi"  readonly></IonInput>
+              </IonItem>
+              
+              <IonItem>
+                  <IonCheckbox @ionChange="handleCheckboxChange('correct')" :checked="isValid === true" slot="start" />
+                  <IonLabel style="font-size: 12px;">Information is correct</IonLabel>
+                </IonItem>
+                <IonItem>
+                  <IonCheckbox @ionChange="handleCheckboxChange('incorrect')" :checked="isValid === false"  slot="start" />
+                  <IonLabel style="font-size: 12px;" >Information is incorrect</IonLabel>
+                </IonItem>
               <!-- Submit Button -->
               <IonButton expand="full" class="ion-margin-top" @click="saveForm">
                 Lưu thông tin
@@ -374,32 +431,37 @@ ion-page {
   flex-direction: column;
 }
 
-/* Card styling */
 ion-card {
   margin: 0;
   border-radius: 10px;
 }
 
-/* Full-width inputs */
 ion-input {
   width: 100%;
 }
 
-/* Button styling */
 ion-button {
-  --background: #3880ff;
+  --background: #D7344C;
   --color: white;
   font-weight: bold;
-  border-radius: 5px;
-  padding: 10px;
+  border-radius: 15px;
+}
+ion-label {
+  font-weight: bold;
+  font-size: 1rem;
+}
+ion-checkbox {
+  --border-color-checked: #f4f4f4;
+  --checkbox-background-checked: #ffffff; 
+  --size: 16px;
+  --background: #ffffff;
+  --border-color: #ccc;
+  --border-width: 2px;
+  --checkmark-color: #D7344C;
+  margin-right: 8px;
 }
 
-/* Alert spacing */
-ion-alert {
-  width: 80%;
-  margin-left: 10%;
-}
-/* From Uiverse.io by SchawnnahJ */ 
+
 .loader {
  position: relative;
  width: 2.5em;

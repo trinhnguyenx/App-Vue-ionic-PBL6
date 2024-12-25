@@ -1,0 +1,113 @@
+// from django.db import models
+// from accounts.models import CustomUser
+// import uuid
+
+
+// class CommonCard(models.Model):
+//     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+//     id = models.CharField(max_length=255, null=True, blank=True, unique=True)
+//     name = models.CharField(max_length=255, null=True, blank=True)
+//     dob = models.CharField(max_length=255, null=True, blank=True)
+//     expire_date = models.CharField(max_length=255, null=True, blank=True)
+//     type = models.CharField(max_length=255, null=True, blank=True)
+//     is_valid = models.BooleanField(default=False)
+//     images = models.CharField(max_length=255, null=True, blank=True)
+
+//     class Meta:
+//         abstract = True
+
+//     def __str__(self):
+//         return f"{self.name} - {self.type}"
+
+
+// class CCCDCard(CommonCard):
+//     gender = models.CharField(max_length=255, null=True, blank=True)
+//     origin_place = models.CharField(max_length=255, null=True, blank=True)
+//     current_place = models.CharField(max_length=255, null=True, blank=True)
+//     issue_date = models.CharField(max_length=255, null=True, blank=True)
+//     nationality = models.CharField(max_length=255, null=True, blank=True)
+//     personal_identifi = models.CharField(max_length=255, default='')
+//     images_behind = models.CharField(max_length=255, null=True, blank=True)
+//     user = models.ForeignKey(
+//         CustomUser,
+//         on_delete=models.CASCADE,
+//         related_name="cccd_cards",
+//         default=1
+//     )
+
+//     class Meta:
+//         constraints = [
+//             models.UniqueConstraint(fields=['user', 'id'], name='unique_user_cccd_card')
+//         ]
+
+
+// class GPLXCard(CommonCard):
+//     level = models.CharField(max_length=255, null=True, blank=True)
+//     iplace = models.CharField(max_length=255, null=True, blank=True)
+//     origin_place = models.CharField(max_length=255, null=True, blank=True)
+//     issue_date = models.CharField(max_length=255, null=True, blank=True)
+//     nationality = models.CharField(max_length=255, null=True, blank=True)
+//     user = models.ForeignKey(
+//         CustomUser,
+//         on_delete=models.CASCADE,
+//         related_name="gplx_cards",
+//         default=1
+
+//     )
+
+//     class Meta:
+//         constraints = [
+//             models.UniqueConstraint(fields=['user', 'id'], name='unique_user_gplx_card')
+//         ]
+
+
+// class BHYTCard(CommonCard):
+//     ihos = models.CharField(max_length=255, null=True, blank=True)
+//     gender = models.CharField(max_length=255, null=True, blank=True)
+//     iplace = models.CharField(max_length=255, null=True, blank=True)
+//     issue_date = models.CharField(max_length=255, null=True, blank=True)
+//     user = models.ForeignKey(
+//         CustomUser,
+//         on_delete=models.CASCADE,
+//         related_name="bhyt_cards",
+//         default=1
+//     )
+
+//     class Meta:
+//         constraints = [
+//             models.UniqueConstraint(fields=['user', 'id'], name='unique_user_bhyt_card')
+//         ]
+
+//         //
+
+
+//         #! /usr/bin/python
+// # Copyright (C) 2024 Paradox
+// # Release: v2.4.4
+// # @link olivia.paradox.ai
+
+
+// __author__ = "trinh.nguyen@paradox.ai"
+// __date__ = "22/10/2024 15:06"
+
+// from rest_framework import serializers
+// from rest_framework.validators import UniqueValidator
+
+// from .models import CCCDCard, BHYTCard, GPLXCard
+
+// class CCCDCardSerializer(serializers.ModelSerializer):
+
+//     class Meta:
+//         model = CCCDCard
+//         fields = ['uuid','dob','nationality','id', 'name', 'gender', 'expire_date', 'type', 'origin_place', 'current_place','issue_date','user','personal_identifi','is_valid','images','images_behind']
+
+// class BHYTCardSerializer(serializers.ModelSerializer):
+
+//     class Meta:
+//         model = BHYTCard
+//         fields = ['uuid','name', 'id', 'dob', 'gender','iplace', 'expire_date','ihos','type', 'user','issue_date','is_valid','images']
+
+// class GPLXCardSerializer(serializers.ModelSerializer):
+//     class Meta:
+//         model = GPLXCard
+//         fields = ['uuid','name', 'dob', 'id', 'iplace', 'origin_place', 'issue_date','expire_date','nationality','level','type', 'user','is_valid','images']

@@ -10,10 +10,17 @@
           <ion-icon aria-hidden="true" :icon="arrowBack" @click="gotoHome" />
           <p>Căn cước điện tử</p>
         </div>
-        <div class="verify">
-          <p>Đã xác thực</p>
-          <ion-icon aria-hidden="true" :icon="checkmarkCircle" />
-        </div>
+        <div class="flex-update">
+                    <div class="verify">
+                    <p>Đã xác thực</p>
+                    <ion-icon aria-hidden="true" :icon="checkmarkCircle" />
+                </div>
+                <div class="button-update">
+                    <ion-button @click="gotoUpdate">
+                       <p> Cập nhật</p>
+                    </ion-button>
+                </div>
+                </div>
         <div class="card">
           <ion-card>
             <div class="card-container">
@@ -48,20 +55,20 @@
                     Số định danh cá nhân
                     <scan>/ Personal Identification number:</scan>
                   </p>
-                  <b> {{ listData.id }}</b>
+                  <b> {{ listData.id || 'Chưa có dữ liệu' }}</b>
                   <p>Họ, chữ đệm và tên <scan>/ Full name</scan>
                   </p>
-                  <b>{{ listData.name }}</b>
+                  <b>{{ listData.name || 'Chưa có dữ liệu' }}</b>
                   <div class="text-one-line">
                     <p>Ngày sinh <scan>/ Date of birth</scan>
                     </p>
                     <p>Giới tính <scan>/ Sex</scan>
                     </p>
-                    <p>{{ listData.gender }}</p>
+                    <p>{{ listData.gender || 'Chưa có dữ liệu' }}</p>
                   </div>
-                  <p>{{ listData.dob }}</p>
+                  <p>{{ listData.dob || 'Chưa có dữ liệu' }}</p>
                   <p>
-                    Quốc tịch<scan>/ Nationality: {{ listData.nationality }}</scan>
+                    Quốc tịch<scan>/ Nationality: {{ listData.nationality || 'Chưa có dữ liệu' }}</scan>
                   </p>
                 </div>
               </div>
@@ -71,19 +78,23 @@
         <div class="container-bottom">
           <div class="text-1">
             <p>Nơi thường trú:</p>
-            <pre>{{ listData.origin_place || "" }}</pre>
+            <pre>{{ listData.origin_place || 'Chưa có dữ liệu' }}</pre>
           </div>
           <div class="text-2">
             <p>Nơi ở hiện tại:</p>
-            <pre>{{ listData.current_place || "" }}</pre>
+            <pre>{{ listData.current_place || 'Chưa có dữ liệu' }}</pre>
           </div>
           <div class="text-2">
             <p>Ngày cấp:</p>
-            <pre>{{ listData.issue_date || "" }}</pre>
+            <pre>{{ listData.issue_date || 'Chưa có dữ liệu' }}</pre>
           </div>
           <div class="text-2">
             <p>Ngày hết hạn:</p>
-            <pre>{{ listData.expire_date || "" }}</pre>
+            <pre>{{ listData.expire_date || 'Chưa có dữ liệu' }}</pre>
+          </div>
+          <div class="text-2">
+            <p>Đặc điểm nhận dạng:</p>
+            <pre>{{ listData.personal_identifi || 'Chưa có dữ liệu' }}</pre>
           </div>
         </div>
       </div>
@@ -99,6 +110,7 @@ import { useRouter } from "vue-router";
 import { getCccd } from "@/services/auth";
 import { ICardCCCD } from "@/type/card";
 import { notify } from "@/utils/toast";
+import { onIonViewWillEnter } from "@ionic/vue";
 
 const router = useRouter();
 const loading = ref(false);
@@ -106,7 +118,16 @@ const loading = ref(false);
 const gotoHome = async () => {
   router.push("/tabs");
 };
-onMounted(() => {
+const gotoUpdate = async () => {
+  localStorage.setItem("is_update", "true");
+  const isUpdate = localStorage.getItem("is_update");
+  if (isUpdate === "true") {
+    router.push({ name: "FormPage", params: { userId: userId } });
+  } else {
+    notify.error("Failed to set 'is_update' in localStorage");
+  }
+};
+onIonViewWillEnter(() => {
   getCccdData();
 });
 
@@ -265,6 +286,25 @@ const getCccdData = async () => {
 .verify ion-icon {
   color: #41a350;
 }
+.flex-update {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+ion-button {
+    --background: #41A350;
+    --color: white;
+    --padding-start: 15px;
+    --padding-end: 15px;
+    --box-shadow: none;
+    --border-width: 0;
+    --border-color: transparent;
+    --border-style: solid;
+}
+ ion-button p {
+    font-weight: 600;
+    font-size: 0.5rem;
+ }
 
 /* From Uiverse.io by SchawnnahJ */
 .loader {

@@ -1,5 +1,5 @@
 <template>
-    <ion-page>
+    <ion-page class="bg-white" style="z-index: 100;">
         <ion-content class="ion-padding">
             <div v-if="!listData || Object.keys(listData).length === 0">
                 <div class="loader" v-if="loading"></div>
@@ -11,9 +11,16 @@
                     <ion-icon aria-hidden="true" :icon="arrowBack" @click="gotoHome" />
                     <p>Giấy phép lái xe</p>
                 </div>
-                <div class="verify">
+                <div class="flex-update">
+                    <div class="verify">
                     <p>Đã xác thực</p>
                     <ion-icon aria-hidden="true" :icon="checkmarkCircle" />
+                </div>
+                <div class="button-update">
+                    <ion-button @click="gotoUpdate">
+                       <p> Cập nhật</p>
+                    </ion-button>
+                </div>
                 </div>
                 <div class="card">
                     <ion-card>
@@ -87,13 +94,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { IonCard, IonIcon, IonContent, IonPage } from '@ionic/vue';
+import { ref } from 'vue';
+import { IonCard, IonIcon, IonContent, IonPage, IonButton } from '@ionic/vue';
 import { arrowBack, checkmarkCircle } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { getGplx } from '@/services/auth';
 import { ICardGPLX } from "@/type/card";
 import { notify } from '@/utils/toast';
+import { onIonViewWillEnter } from "@ionic/vue";
+
 const router = useRouter();
 
 const loading = ref(false);
@@ -101,8 +110,17 @@ const loading = ref(false);
 const gotoHome = async () => {
     router.push('/tabs');
 };
+const gotoUpdate = async () => {
+  localStorage.setItem("is_update", "true");
+  const isUpdate = localStorage.getItem("is_update");
+  if (isUpdate === "true") {
+    router.push('/verify-gplx');
+  } else {
+    console.error("Failed to set 'is_update' in localStorage");
+  }
+};
 
-onMounted(() => {
+onIonViewWillEnter(() => {
     getGplxData();
 });
 
@@ -195,9 +213,11 @@ const getGplxData = async () => {
 }
 
 .center-right {
-    display: grid;
-    grid-template-columns: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     gap: 10px;
+    margin-bottom: 10px;
 }
 
 .center-left p {
@@ -288,7 +308,25 @@ const getGplxData = async () => {
 .verify ion-icon {
     color: #41A350;
 }
-
+.flex-update {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+ion-button {
+    --background: #41A350;
+    --color: white;
+    --padding-start: 15px;
+    --padding-end: 15px;
+    --box-shadow: none;
+    --border-width: 0;
+    --border-color: transparent;
+    --border-style: solid;
+}
+ ion-button p {
+    font-weight: 600;
+    font-size: 0.5rem;
+ }
 /* From Uiverse.io by SchawnnahJ */
 .loader {
     position: relative;

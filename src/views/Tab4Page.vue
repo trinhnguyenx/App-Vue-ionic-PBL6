@@ -1,6 +1,5 @@
 <template>
   <ion-page>
-
     <ion-content>
       <div>
         <ion-header>
@@ -8,7 +7,12 @@
             <ion-title>Thông báo</ion-title>
           </ion-toolbar>
         </ion-header>
-        <ion-refresher slot="fixed" @ionRefresh="doRefresh" @ionPull="handlePulling" @ionStart="handleStart">
+        <ion-refresher
+          slot="fixed"
+          @ionRefresh="doRefresh"
+          @ionPull="handlePulling"
+          @ionStart="handleStart"
+        >
           <ion-refresher-content refreshingSpinner="circles">
             <div v-if="overPull" class="over-pull-effect">
               <ion-icon name="arrow-down-outline" class="pull-icon"></ion-icon>
@@ -17,11 +21,18 @@
         </ion-refresher>
 
         <!-- Danh sách thông báo -->
-        <ion-card v-for="item in listdata" :key="item.uuid" class="notification-card" @click="markAsRead(item)">
+        <ion-card
+          v-for="item in listdata"
+          :key="item.uuid"
+          class="notification-card"
+          @click="markAsRead(item)"
+        >
           <div v-if="item.is_new" class="notification-dot"></div>
           <p class="text-header-card">{{ handleDate(item.created_at) }}</p>
           <ion-card-header>
-            <ion-card-title class="custom-title">{{ item.title }}</ion-card-title>
+            <ion-card-title class="custom-title">{{
+              item.title
+            }}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <p class="text-des">{{ item.description }}</p>
@@ -37,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted,} from "vue";
+import { ref, onMounted } from "vue";
 import {
   IonPage,
   IonIcon,
@@ -70,7 +81,7 @@ const getListNoti = async () => {
     const res = await getNoti(Number(userId));
     listdata.value = res.map((item: any) => ({ ...item, isNew: item.is_new }));
   } catch (error) {
-    notify.error(String(error));
+    console.log(String(error));
   } finally {
     loading.value = false;
   }
@@ -79,22 +90,18 @@ const getListNoti = async () => {
 const markAsRead = async (notification: INotification) => {
   if (!notification.is_new) return;
   try {
-    if(!notification.is_expired) {
+    if (!notification.is_expired) {
       await PutNoti(notification.uuid);
       notification.is_new = false;
     } else {
       notification.is_new = false;
       await PutNoti(notification.uuid);
-      localStorage.setItem('is_update', 'true');
-      const userId = localStorage.getItem('id');
-      if(notification.type === 'cccd') {
-      router.push({ name: 'FormPage', params: { userId: userId } });
-      }
-      else if(notification.type === 'gplx') {
-        router.push('/verify-gplx');
-      }
-      else {
-        router.push('/verify-bhyt');
+      localStorage.setItem("is_update", "true");
+      const userId = localStorage.getItem("id");
+      if (notification.type === "cccd") {
+        router.push({ name: "FormPage", params: { userId: userId } });
+      } else {
+        router.push("/verify-bhyt");
       }
     }
   } catch (error) {
@@ -118,7 +125,9 @@ const handleStart = () => {
 };
 const handleDateTime = (dateTimeString: string) => {
   const parsedDate = new Date(dateTimeString);
-  const localDate = parsedDate.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+  const localDate = parsedDate.toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+  });
   return localDate;
 };
 const handleDate = (dateTimeString: string) => {
@@ -129,7 +138,6 @@ const handleTime = (dateTimeString: string) => {
   const datetime = handleDateTime(dateTimeString);
   return datetime.split(" ")[0];
 };
-
 
 onMounted(() => {
   getListNoti();
@@ -155,7 +163,7 @@ onMounted(() => {
   right: 5px;
   width: 8px;
   height: 8px;
-  background-color: rgb(215,52,67);
+  background-color: rgb(215, 52, 67);
   border-radius: 50%;
   animation: pulse 1.5s infinite;
 }
@@ -163,17 +171,17 @@ onMounted(() => {
   0% {
     transform: scale(1);
     opacity: 1;
-    box-shadow: 0 0 0 0 rgb(215,52,67);
+    box-shadow: 0 0 0 0 rgb(215, 52, 67);
   }
   50% {
     transform: scale(1.1);
     opacity: 0.6;
-    box-shadow: 0 0 3px 3px rgb(215,52,67);
+    box-shadow: 0 0 3px 3px rgb(215, 52, 67);
   }
   100% {
     transform: scale(1);
     opacity: 0;
-    box-shadow: 0 0 0 0 rgb(215,52,67);
+    box-shadow: 0 0 0 0 rgb(215, 52, 67);
   }
 }
 
@@ -198,7 +206,6 @@ onMounted(() => {
 ion-card-title {
   font-size: 0.8rem;
   padding-top: 5px;
-
 }
 
 ion-card-header {
@@ -229,7 +236,6 @@ ion-card-header {
 icon-card-content {
   padding-top: 0;
   padding-bottom: 0;
-
 }
 
 ion-title {
