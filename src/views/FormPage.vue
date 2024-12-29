@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { Filesystem, Directory } from "@capacitor/filesystem";
-import { Camera, CameraResultType } from "@capacitor/camera";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import {
   IonPage,
   IonGrid,
@@ -20,14 +20,14 @@ import {
 
 import { updloadImages } from "@/services/photoService";
 import { notify } from "@/utils/toast";
-import { ICardCCCDCreate, ICardCCCDBehind,ICardCCCD } from "@/type/card";
+import { ICardCCCDCreate, ICardCCCDBehind, ICardCCCD } from "@/type/card";
 import { useRouter, useRoute } from "vue-router";
-import { saveCCCD,updateCCCD } from "@/services/photoService";
+import { saveCCCD, updateCCCD } from "@/services/photoService";
 import { updateActive } from "@/services/auth";
 import { alertController } from "@ionic/vue";
-import {getCccd} from "@/services/auth";
+import { getCccd } from "@/services/auth";
 import { onIonViewWillEnter } from "@ionic/vue";
-import {uploadImageToFireBase} from "../services/firebaseService";
+import { uploadImageToFireBase } from "../services/firebaseService";
 
 const router = useRouter();
 const route = useRoute();
@@ -36,12 +36,12 @@ const photoList = ref([] as any);
 const directory = Directory.ExternalStorage;
 const rootDir = "DCIM";
 const listData = ref<ICardCCCDCreate | null>(null);
-const dataBehind = ref<ICardCCCDBehind | null>(null);;
+const dataBehind = ref<ICardCCCDBehind | null>(null);
 const showForm = ref(false);
 const userId = ref(0);
 const isFront = ref(true);
 const loading = ref(false);
-const isValid = ref<null | boolean>(null); 
+const isValid = ref<null | boolean>(null);
 const idbehind = ref("");
 const images = ref("");
 const imagesBehind = ref("");
@@ -60,6 +60,9 @@ const personal_identifi = ref("");
 const user = ref("");
 //////////////
 const isUpdate = !(localStorage.getItem("is_update") === "true");
+const handleSpace = (item: string) => {
+  return item ? item.replace(/\s/g, "") : "";
+};
 const takePhoto = async () => {
   try {
     const image = await Camera.getPhoto({
@@ -67,6 +70,7 @@ const takePhoto = async () => {
       allowEditing: true,
       quality: 100,
       saveToGallery: true,
+      source: CameraSource.Camera,
     });
 
     if (image.path && isFront.value) {
@@ -78,20 +82,6 @@ const takePhoto = async () => {
     notify.error(`${error}`);
   }
 };
-const addToList = async (path: string) => {
-  const name = path?.split("/").at(-1);
-  if (name) {
-    photoList.value.push({ name: name, data: await readPhoto(name) });
-  }
-};
-const readPhoto = async (fileName: string) => {
-  const file = await Filesystem.readFile({
-    path: `${rootDir}/${fileName}`,
-    directory: directory,
-  });
-  return `data:image/jpeg;base64,${file.data}`;
-};
-
 const uploadPhoto = async (image: any) => {
   try {
     loading.value = true;
@@ -104,8 +94,9 @@ const uploadPhoto = async (image: any) => {
       fileContent.split("").map((char) => char.charCodeAt(0))
     );
     // firebase
-    const file = new Blob([byteNumbers], { type: image.format });
-    images.value = (await uploadImageToFireBase(file, 'cccdmattruoc', userId.value)) || '';
+    const filetruoc = new Blob([byteNumbers], { type: image.format });
+    images.value =
+      (await uploadImageToFireBase(filetruoc, "cccdmattruoc", userId.value)) || "";
     //
 
     const formData = new FormData();
@@ -116,8 +107,6 @@ const uploadPhoto = async (image: any) => {
     );
 
     const response = await updloadImages(formData);
-
-    const result = response.text;
     listData.value = response.text;
     if (response.text && listData.value) {
       dob.value = listData.value.dob || "";
@@ -136,11 +125,10 @@ const uploadPhoto = async (image: any) => {
     setTimeout(async () => {
       if (isFront.value) {
         isFront.value = false;
-        presentAlertBehind()
+        presentAlertBehind();
       }
     }, 1000);
 
-    return result;
   } catch (error) {
     notify.error(`Lỗi khi tải ảnh: ${error}`);
     console.error(`Lỗi khi tải ảnh: ${error}`);
@@ -159,8 +147,9 @@ const uploadPhotoBehind = async (image: any) => {
       fileContent.split("").map((char) => char.charCodeAt(0))
     );
     // firebase
-    const file = new Blob([byteNumbers], { type: image.format });
-    imagesBehind.value = (await uploadImageToFireBase(file, 'cccdmatsau', userId.value)) || '';
+    const filesau = new Blob([byteNumbers], { type: image.format });
+    imagesBehind.value =
+      (await uploadImageToFireBase(filesau, "cccdmatsau", userId.value)) || "";
     //
     const formData = new FormData();
     formData.append(
@@ -174,37 +163,42 @@ const uploadPhotoBehind = async (image: any) => {
     if (response.text && dataBehind.value) {
       issueDate.value = dataBehind.value.issue_date;
       idbehind.value = handleSpace(dataBehind.value.id_);
-      personal_identifi.value = dataBehind.value.personal_identifi;
+      personal_identifi.value = dataBehind.value.personal_identifi || "";
       if (listData.value) {
         listData.value.personal_identifi = personal_identifi.value;
       }
-        if( isUpdate && id.value !== idbehind.value) {
-          notify.error("Số CCCD mặt sau không trùng khớp. Vui lòng thử lại.");
-          
-          setTimeout(() => {
-            router.push("/auth/login"); 
-            showForm.value = false;
-          }, 1000);
-        }
+      if (isUpdate && id.value !== idbehind.value) {
+        notify.error("Số CCCD mặt sau không trùng khớp. Vui lòng thử lại.");
+        console.error("Số CCCD mặt sau không trùng khớp. Vui lòng thử lại.");
+        setTimeout(() => {
+          router.push("/auth/login");
+          showForm.value = false;
+        }, 1000);
+      }
     } else {
-      notify.error("Không thể xác thực thông tin từ ảnh mặt sau. Vui lòng thử lại.");
+      notify.error(
+        "Không thể xác thực thông tin từ ảnh mặt sau. Vui lòng thử lại."
+      );
+      console.error(
+        "Không thể xác thực thông tin từ ảnh mặt sau. Vui lòng thử lại."
+      );
     }
 
     setTimeout(() => {
       showForm.value = true;
     }, 1000);
   } catch (error) {
-    notify.error(`${error}`);
+    notify.error(` Lỗi ${error}`);
+    console.error(` Lỗi ${error}`);
   } finally {
     loading.value = false;
   }
-
-}
+};
 ////////////
 const handleCheckboxChange = (type: string) => {
-  if (type === 'correct') {
-    isValid.value = true; 
-  } else if (type === 'incorrect') {
+  if (type === "correct") {
+    isValid.value = true;
+  } else if (type === "incorrect") {
     isValid.value = false;
   }
 };
@@ -223,73 +217,76 @@ const getCccdData = async () => {
     notify.error("Failed to get data BHYT");
   }
 };
-const handleSpace = (item: string) => {
-    return item.replace(/\s+/g, "")
-}
 
 const saveForm = async () => {
   try {
     // Kiểm tra dữ liệu trước khi gửi
-    if (!dob.value || !name.value || !id.value || !nationality.value) {
-      notify.error("Vui lòng điền đầy đủ các trường bắt buộc");
+    if (isValid.value === null) {
+      notify.error("Vui lòng xác nhận thông tin trước khi lưu.");
       return;
     }
-    // Gán dữ liệu vào listData
     listData.value = {
-      dob: dob.value,
-      nationality: nationality.value,
-      id: handleSpace(id.value),
-      name: name.value,
-      gender: gender.value,
-      expire_date: expireDate.value,
-      type: type.value,
-      origin_place: originPlace.value,
-      current_place: currentPlace.value,
-      issue_date: issueDate.value,
-      personal_identifi: personal_identifi.value,
-      is_valid: isValid.value ?? false,
-      images: images.value,
-      images_behind: imagesBehind.value,
+      dob: dob.value || "",
+      nationality: nationality.value || "",
+      id: handleSpace(id.value) || "",
+      name: name.value || "",
+      gender: gender.value || "",
+      expire_date: expireDate.value || "",
+      type: type.value || "",
+      origin_place: originPlace.value || "",
+      current_place: currentPlace.value || "",
+      issue_date: issueDate.value || "",
+      personal_identifi: personal_identifi.value || "",
+      is_valid: isValid.value,
+      images: images.value || "",
+      images_behind: imagesBehind.value || "",
       user: userId.value,
     };
 
-    if(localStorage.getItem('is_update') === 'false') {
+    if (localStorage.getItem("is_update") === "false") {
       await saveCCCD(listData.value);
-    setTimeout(async () => {
-      await updateActive(name.value, userId.value);
-      localStorage.setItem("is_verified", "true");
-    }, 2000);
-    notify.success("Dữ liệu đã được lưu thành công");
-    setTimeout(() => {
-      router.push("/tabs");
-    }, 1000);
+      setTimeout(async () => {
+        await updateActive(name.value, userId.value);
+        localStorage.setItem("is_verified", "true");
+        localStorage.setItem("dob", dob.value);
+      }, 1000);
+      notify.success("Dữ liệu đã được lưu thành công");
+      setTimeout(() => {
+        router.push("/tabs");
+      }, 1000);
     } else {
       await getCccdData();
       if (dataCCCD.value) {
         await updateCCCD(listData.value, dataCCCD.value.uuid);
-        // notify.success("Dữ liệu đã được cập nhật thành công");
-        notify.success(`${isValid.value}`)
         localStorage.setItem("is_update", "false");
-    setTimeout(() => {
-      router.push("/tabs");
-    }, 1000);
-    showForm.value = false;
+        setTimeout(() => {
+          router.push("/tabs");
+        }, 1000);
+        notify.success("Dữ liệu đã được cập nhật thành công");
+        showForm.value = false;
       } else {
         notify.error("Dữ liệu CCCD không tồn tại.");
       }
     }
   } catch (error) {
-    console.error("Lỗi khi lưu dữ liệu:", userId.value);
+    console.error(
+      "Lỗi khi lưu dữ liệu:",
+      userId.value,
+      localStorage.getItem("is_update")
+    );
     notify.error(`Lỗi xảy ra, vui lòng thử lại. ${error}`);
   }
 };
 
-
 //////////////
 const presentAlert = async () => {
   const alert = await alertController.create({
-    header: isUpdate ? "Xác thực Căn Cước Công Dân" : "Cập nhật Căn Cước Công Dân",
-    message: isUpdate ? "Bạn cần xác thực tài khoản bằng CCCD" : "Bạn cần cập nhật thông tin CCCD",
+    header: isUpdate
+      ? "Xác thực Căn Cước Công Dân"
+      : "Cập nhật Căn Cước Công Dân",
+    message: isUpdate
+      ? "Bạn cần xác thực tài khoản bằng CCCD"
+      : "Bạn cần cập nhật thông tin CCCD",
     buttons: [
       {
         text: "Ok",
@@ -313,8 +310,12 @@ const presentAlert = async () => {
 
 const presentAlertBehind = async () => {
   const alert = await alertController.create({
-    header: isUpdate ? "Xác thực Căn Cước Công Dân" : "Cập nhật Căn Cước Công Dân",
-    message: isUpdate ? "Bạn cần chụp mặt sau của CCCD" : "Bạn cần cập nhật thông tin mặt sau của CCCD",
+    header: isUpdate
+      ? "Xác thực Căn Cước Công Dân"
+      : "Cập nhật Căn Cước Công Dân",
+    message: isUpdate
+      ? "Bạn cần chụp mặt sau của CCCD"
+      : "Bạn cần cập nhật thông tin mặt sau của CCCD",
     buttons: [
       {
         text: "Ok",
@@ -331,12 +332,13 @@ const presentAlertBehind = async () => {
         },
       },
     ],
-    cssClass: 'custom-alert'
+    cssClass: "custom-alert",
   });
 
   await alert.present();
 };
 onIonViewWillEnter(() => {
+  showForm.value = false;
   userId.value = Number(route.params.userId);
   presentAlert();
 });
@@ -346,79 +348,100 @@ onIonViewWillEnter(() => {
   <ion-page>
     <!-- Popup Alert -->
     <div class="loader" v-if="loading"></div>
-      
+
     <IonContent v-else>
       <IonContent class="ion-padding" v-if="showForm">
-      <IonGrid class="ion-no-padding">
-        <IonCard>
-          <IonCardHeader>
-            <IonCardTitle>Card Information</IonCardTitle>
-          </IonCardHeader>
+        <IonGrid class="ion-no-padding">
+          <IonCard>
+            <IonCardHeader>
+              <IonCardTitle>Card Information</IonCardTitle>
+            </IonCardHeader>
 
-          <IonCardContent>
-            <IonList>
-              <IonItem lines="full">
-                <IonLabel position="stacked">Full Name</IonLabel>
-                <IonInput v-model="name"  readonly></IonInput>
-              </IonItem>
+            <IonCardContent>
+              <IonList>
+                <IonItem lines="full">
+                  <IonLabel position="stacked">Full Name</IonLabel>
+                  <IonInput v-model="name" readonly></IonInput>
+                </IonItem>
 
-              <IonItem lines="full">
-                <IonLabel position="stacked">Card Number</IonLabel>
-                <IonInput v-model="id"  readonly></IonInput>
-              </IonItem>
+                <IonItem lines="full">
+                  <IonLabel position="stacked">Card Number</IonLabel>
+                  <IonInput v-model="id" readonly></IonInput>
+                </IonItem>
 
-              <IonItem lines="full">
-                <IonLabel position="stacked">Birthday</IonLabel>
-                <IonInput v-model="dob" readonly>
-                </IonInput>
-              </IonItem>
+                <IonItem lines="full">
+                  <IonLabel position="stacked">Birthday</IonLabel>
+                  <IonInput v-model="dob" readonly> </IonInput>
+                </IonItem>
 
-              <IonItem lines="full">
-                <IonLabel position="stacked">Nationality</IonLabel>
-                <IonInput v-model="nationality" readonly></IonInput>
-              </IonItem>
+                <IonItem lines="full">
+                  <IonLabel position="stacked">Nationality</IonLabel>
+                  <IonInput v-model="nationality" readonly></IonInput>
+                </IonItem>
 
-              <IonItem lines="full">
-                <IonLabel position="stacked">Issued by</IonLabel>
-                <IonInput v-model="originPlace" readonly></IonInput>
-              </IonItem>
+                <IonItem lines="full">
+                  <IonLabel position="stacked">Issued by</IonLabel>
+                  <IonInput v-model="originPlace" readonly></IonInput>
+                </IonItem>
+                <IonItem lines="full">
+                  <IonLabel position="stacked">Current Place</IonLabel>
+                  <IonInput v-model="currentPlace" readonly></IonInput>
+                </IonItem>
 
-              <IonItem lines="full">
-                <IonLabel position="stacked">Gender</IonLabel>
-                <IonInput v-model="gender"  readonly></IonInput>
-              </IonItem>
+                <IonItem lines="full">
+                  <IonLabel position="stacked">Gender</IonLabel>
+                  <IonInput v-model="gender" readonly></IonInput>
+                </IonItem>
 
-              <IonItem lines="full">
-                <IonLabel position="stacked">Expire Date</IonLabel>
-                <IonInput v-model="expireDate" readonly></IonInput>
-              </IonItem>
+                <IonItem lines="full">
+                  <IonLabel position="stacked">Expire Date</IonLabel>
+                  <IonInput v-model="expireDate" readonly></IonInput>
+                </IonItem>
 
-              <IonItem lines="full">
-                <IonLabel position="stacked">Issue Date</IonLabel>
-                <IonInput v-model="issueDate" readonly></IonInput>
-              </IonItem>
-              <IonItem lines="full">
-                <IonLabel position="stacked">Identifying Characteristics</IonLabel>
-                <IonInput v-model="personal_identifi"  readonly></IonInput>
-              </IonItem>
-              
-              <IonItem>
-                  <IonCheckbox @ionChange="handleCheckboxChange('correct')" :checked="isValid === true" slot="start" />
-                  <IonLabel style="font-size: 12px;">Information is correct</IonLabel>
+                <IonItem lines="full">
+                  <IonLabel position="stacked">Issue Date</IonLabel>
+                  <IonInput v-model="issueDate" readonly></IonInput>
+                </IonItem>
+                <IonItem lines="full">
+                  <IonLabel position="stacked"
+                    >Identifying Characteristics</IonLabel
+                  >
+                  <IonInput v-model="personal_identifi" readonly></IonInput>
+                </IonItem>
+
+                <IonItem>
+                  <IonCheckbox
+                    @ionChange="handleCheckboxChange('correct')"
+                    :checked="isValid === true"
+                    slot="start"
+                  />
+                  <IonLabel style="font-size: 12px"
+                    >Information is correct</IonLabel
+                  >
                 </IonItem>
                 <IonItem>
-                  <IonCheckbox @ionChange="handleCheckboxChange('incorrect')" :checked="isValid === false"  slot="start" />
-                  <IonLabel style="font-size: 12px;" >Information is incorrect</IonLabel>
+                  <IonCheckbox
+                    @ionChange="handleCheckboxChange('incorrect')"
+                    :checked="isValid === false"
+                    slot="start"
+                  />
+                  <IonLabel style="font-size: 12px"
+                    >Information is incorrect</IonLabel
+                  >
                 </IonItem>
-              <!-- Submit Button -->
-              <IonButton expand="full" class="ion-margin-top" @click="saveForm">
-                Lưu thông tin
-              </IonButton>
-            </IonList>
-          </IonCardContent>
-        </IonCard>
-      </IonGrid>
-    </IonContent>
+                <!-- Submit Button -->
+                <IonButton
+                  expand="full"
+                  class="ion-margin-top"
+                  @click="saveForm"
+                >
+                  Lưu thông tin
+                </IonButton>
+              </IonList>
+            </IonCardContent>
+          </IonCard>
+        </IonGrid>
+      </IonContent>
     </IonContent>
   </ion-page>
 </template>
@@ -441,7 +464,7 @@ ion-input {
 }
 
 ion-button {
-  --background: #D7344C;
+  --background: #d7344c;
   --color: white;
   font-weight: bold;
   border-radius: 15px;
@@ -452,88 +475,96 @@ ion-label {
 }
 ion-checkbox {
   --border-color-checked: #f4f4f4;
-  --checkbox-background-checked: #ffffff; 
+  --checkbox-background-checked: #ffffff;
   --size: 16px;
   --background: #ffffff;
   --border-color: #ccc;
   --border-width: 2px;
-  --checkmark-color: #D7344C;
+  --checkmark-color: #d7344c;
   margin-right: 8px;
 }
 
-
 .loader {
- position: relative;
- width: 2.5em;
- height: 2.5em;
- transform: rotate(165deg);
+  position: relative;
+  width: 2.5em;
+  height: 2.5em;
+  transform: rotate(165deg);
 }
 
-.loader:before, .loader:after {
- content: "";
- position: absolute;
- top: 50%;
- left: 50%;
- display: block;
- width: 0.5em;
- height: 0.5em;
- border-radius: 0.25em;
- transform: translate(-50%, -50%);
+.loader:before,
+.loader:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 0.25em;
+  transform: translate(-50%, -50%);
 }
 
 .loader:before {
- animation: before8 2s infinite;
+  animation: before8 2s infinite;
 }
 
 .loader:after {
- animation: after6 2s infinite;
+  animation: after6 2s infinite;
 }
 
 @keyframes before8 {
- 0% {
-  width: 0.5em;
-  box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
- }
+  0% {
+    width: 0.5em;
+    box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75),
+      -1em 0.5em rgba(111, 202, 220, 0.75);
+  }
 
- 35% {
-  width: 2.5em;
-  box-shadow: 0 -0.5em rgba(225, 20, 98, 0.75), 0 0.5em rgba(111, 202, 220, 0.75);
- }
+  35% {
+    width: 2.5em;
+    box-shadow: 0 -0.5em rgba(225, 20, 98, 0.75),
+      0 0.5em rgba(111, 202, 220, 0.75);
+  }
 
- 70% {
-  width: 0.5em;
-  box-shadow: -1em -0.5em rgba(225, 20, 98, 0.75), 1em 0.5em rgba(111, 202, 220, 0.75);
- }
+  70% {
+    width: 0.5em;
+    box-shadow: -1em -0.5em rgba(225, 20, 98, 0.75),
+      1em 0.5em rgba(111, 202, 220, 0.75);
+  }
 
- 100% {
-  box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
- }
+  100% {
+    box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75),
+      -1em 0.5em rgba(111, 202, 220, 0.75);
+  }
 }
 
 @keyframes after6 {
- 0% {
-  height: 0.5em;
-  box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
- }
+  0% {
+    height: 0.5em;
+    box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75),
+      -0.5em -1em rgba(233, 169, 32, 0.75);
+  }
 
- 35% {
-  height: 2.5em;
-  box-shadow: 0.5em 0 rgba(61, 184, 143, 0.75), -0.5em 0 rgba(233, 169, 32, 0.75);
- }
+  35% {
+    height: 2.5em;
+    box-shadow: 0.5em 0 rgba(61, 184, 143, 0.75),
+      -0.5em 0 rgba(233, 169, 32, 0.75);
+  }
 
- 70% {
-  height: 0.5em;
-  box-shadow: 0.5em -1em rgba(61, 184, 143, 0.75), -0.5em 1em rgba(233, 169, 32, 0.75);
- }
+  70% {
+    height: 0.5em;
+    box-shadow: 0.5em -1em rgba(61, 184, 143, 0.75),
+      -0.5em 1em rgba(233, 169, 32, 0.75);
+  }
 
- 100% {
-  box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
- }
+  100% {
+    box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75),
+      -0.5em -1em rgba(233, 169, 32, 0.75);
+  }
 }
 
 .loader {
- position: absolute;
- top: calc(50% - 1.25em);
- left: calc(50% - 1.25em);
+  position: absolute;
+  top: calc(50% - 1.25em);
+  left: calc(50% - 1.25em);
 }
 </style>

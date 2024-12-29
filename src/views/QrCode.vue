@@ -107,8 +107,8 @@ onIonViewWillEnter(async () => {
   font-size: 14px;
 }
 .card-container {
-  width: 16rem;
-  height: 16rem;
+  width: 15rem;
+  height: 15rem;
 }
 /* From Uiverse.io by SchawnnahJ */ 
 .loader {

@@ -80,7 +80,7 @@ const handleScanData = (data: string) => {
     `;
   }
 
-  return "Dữ liệu không hợp lệ.";
+  return data;
 };
 const gotoHome = async () => {
   scanResult.value = null;

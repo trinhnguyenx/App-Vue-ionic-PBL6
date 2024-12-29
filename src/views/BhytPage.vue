@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import { Filesystem, Directory } from "@capacitor/filesystem";
-import { Camera, CameraResultType } from "@capacitor/camera";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { onIonViewWillEnter } from "@ionic/vue";
 
 import {
@@ -40,8 +40,9 @@ const rootDir = "DCIM";
 const listData = ref<ICardBHYTCreate | null>(null);
 const showForm = ref(false);
 const showerror = ref<string | null>(null);
-const isValid = ref(false);
+const isValid = ref<null | boolean>(null); 
 const images = ref("");
+const fullname = ref("");
 
 ////////////
 const name = ref("");
@@ -56,7 +57,12 @@ const type = ref("BHYT");
 const user = ref("");
 //////////////
 const userId: number = parseInt(localStorage.getItem("id") || "0", 10);
-
+const handleSpace = (item: string) => {
+  return item ? item.replace(/\s+/g, "") : "";
+};
+const upperCase = (item: string) => {
+  return item ? item.toUpperCase() : "";
+};
 const takePhoto = async () => {
   try {
     const image = await Camera.getPhoto({
@@ -64,6 +70,7 @@ const takePhoto = async () => {
       allowEditing: true,
       quality: 100,
       saveToGallery: true,
+      source: CameraSource.Camera,
     });
 
     if (image.path) {
@@ -74,20 +81,6 @@ const takePhoto = async () => {
     console.error(error);
   }
 };
-const addToList = async (path: string) => {
-  const name = path?.split("/").at(-1);
-  if (name) {
-    photoList.value.push({ name: name, data: await readPhoto(name) });
-  }
-};
-const readPhoto = async (fileName: string) => {
-  const file = await Filesystem.readFile({
-    path: `${rootDir}/${fileName}`,
-    directory: directory,
-  });
-  return `data:image/jpeg;base64,${file.data}`;
-};
-
 const uploadPhoto = async (image: any) => {
   try {
     const fileData = await Filesystem.readFile({
@@ -99,8 +92,8 @@ const uploadPhoto = async (image: any) => {
       fileContent.split("").map((char) => char.charCodeAt(0))
     );
     // firebase
-    const file = new Blob([byteNumbers], { type: image.format });
-    images.value = (await uploadImageToFireBase(file, 'bhyt', userId)) || '';
+    const filess = new Blob([byteNumbers], { type: image.format });
+    images.value = (await uploadImageToFireBase(filess, 'bhyt', userId)) || '';
     //
     const formData = new FormData();
     formData.append(
@@ -110,11 +103,11 @@ const uploadPhoto = async (image: any) => {
     );
 
     const response = await updloadImages(formData);
+    console.log("response", JSON.stringify(response));
 
-    const result = response.text;
     listData.value = response.text;
     if (response.text && listData.value) {
-      name.value = listData.value.name || "";
+      name.value = upperCase(listData.value.name) || "";
       id.value = handleSpace(listData.value.id) || "";
       dob.value = listData.value.dob || "";
       gender.value = listData.value.gender || "";
@@ -122,6 +115,7 @@ const uploadPhoto = async (image: any) => {
       expire_date.value = listData.value.issue_date || "";
       ihos.value = listData.value.ihos || "";
       issue_date.value = listData.value.expire_date || "";
+  
     } else {
       notify.error("Không thể xác thực thông tin từ ảnh. Vui lòng thử lại.");
     }
@@ -129,8 +123,7 @@ const uploadPhoto = async (image: any) => {
       showForm.value = true;
     }, 2000);
 
-    showerror.value = null;
-    return result;
+    showForm.value = false;
   } catch (error) {
     showerror.value = `${error}`;
     throw error;
@@ -160,29 +153,27 @@ const getBhytData = async () => {
     notify.error("Failed to get data CCCD");
   }
 };
-const handleSpace = (item: string) => {
-  return item.replace(/\s+/g, "");
-};
+
 const saveForm = async () => {
   try {
     // Kiểm tra dữ liệu trước khi gửi
-    if (!dob.value || !name.value || !id.value) {
-      notify.error("Vui lòng điền đầy đủ các trường bắt buộc");
+    if (isValid.value === null) {
+      notify.error("Vui lòng xác nhận thông tin trước khi lưu.");
       return;
-    }
-    // Gán dữ liệu vào listData
-    listData.value = {
-      name: name.value,
-      id: handleSpace(id.value),
-      dob: dob.value,
-      gender: gender.value,
-      iplace: iplace.value,
-      issue_date: issue_date.value,
-      expire_date: expire_date.value,
-      ihos: ihos.value,
-      type: type.value,
+    } 
+
+      listData.value = {
+      name: name.value || "",
+      id: handleSpace(id.value) || "",
+      dob: dob.value || "",
+      gender: gender.value || "",
+      iplace: iplace.value || "",
+      issue_date: issue_date.value || "",
+      expire_date: expire_date.value || "",
+      ihos: ihos.value || "",
+      type: type.value || "",
       is_valid: isValid.value,
-      images: images.value,
+      images: images.value || "",
       user: userId,
     };
     if (localStorage.getItem("is_update") === "false") {
@@ -190,7 +181,8 @@ const saveForm = async () => {
       setTimeout(async () => {
         await updateActiveBHYT(userId);
         localStorage.setItem("is_bhyt", "true");
-      }, 2000);
+      }, 1000);
+      showForm.value = false;
       notify.success("Dữ liệu đã được lưu thành công");
       setTimeout(() => {
         router.push("/tabs");
@@ -248,10 +240,9 @@ const presentAlert = async () => {
   await alert.present();
 };
 
-// onMounted(() => {
-//   presentAlert();
-// });
 onIonViewWillEnter(() => {
+  showForm.value = false;
+  fullname.value = localStorage.getItem("fullname") || "";
   presentAlert();
 });
 

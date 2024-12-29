@@ -45,7 +45,7 @@
                                 <div class="center-left">
                                     <img src="https://www.gravatar.com/avatar/?d=mp" alt=""
                                         style="width: 80px; height: 80px; margin-top: 5px;">
-                                    <p>Hạng/Class: {{ listData?.level || 'Chưa có dữ liệu' }}</p>
+                                    <p>Hạng/Class: {{ listData?.level || 'NaN' }}</p>
                                 </div>
                                 <div class="center-right">
                                     <div class="text-one-line">

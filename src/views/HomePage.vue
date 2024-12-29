@@ -2,7 +2,7 @@
     <ion-page class="container bg-white">
         <div class="loader" v-if="isLoading"></div>
 
-        <div v-else>
+        <ion-content v-else :scroll-y="true">
             <div class="home-page-container bg-white">
             <div class="home-page-header">
                 <div class="home-page-header__avatar">
@@ -258,13 +258,13 @@
                 </div>
             </div>
         </div>
-        </div>
+        </ion-content>
     </ion-page>
 </template>
 
 <script setup lang="ts">
-import { IonButton, IonPage, IonIcon} from '@ionic/vue';
-import { ref} from 'vue';
+import { IonButton, IonPage, IonIcon, IonContent} from '@ionic/vue';
+import { onMounted, ref} from 'vue';
 import { useRouter } from 'vue-router';
 import { newspaperOutline, calendarClearOutline, warningOutline } from 'ionicons/icons';
 import { onIonViewWillEnter } from "@ionic/vue";
@@ -289,6 +289,9 @@ const gotoQR = async () => {
     router.push('/generate-qr');
 };
 const fullname = ref('')
+onMounted (() => {
+    fullname.value = localStorage.getItem('name') || 'NGUYỄN CÔNG TRÌNH';
+})
 onIonViewWillEnter(() => {
 fullname.value = localStorage.getItem('name') || 'NGUYỄN CÔNG TRÌNH';
   setTimeout(() => {

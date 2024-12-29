@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { Filesystem, Directory } from "@capacitor/filesystem";
-import { Camera, CameraResultType } from "@capacitor/camera";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { onIonViewWillEnter } from "@ionic/vue";
 
 import {
@@ -39,7 +39,7 @@ const directory = Directory.ExternalStorage;
 const rootDir = "DCIM";
 const listData = ref<ICardGPLXCreate | null>(null);
 const showForm = ref(false);
-const isValid = ref(false);
+const isValid = ref<null | boolean>(null); 
 const images = ref("");
 const fullname = ref('')
 
@@ -53,11 +53,13 @@ const issue_date = ref("");
 const expire_date = ref("");
 const nationality = ref("");
 const level = ref("");
-const type = ref("GPL");
+const type = ref("GPLX");
 const user = ref("");
 //////////////
 const userId: number = parseInt(localStorage.getItem("id") || "0", 10);
-
+const handleSpace = (item: string) => {
+  return item ? item.replace(/\s/g, "") : "";
+}
 const takePhoto = async () => {
   try {
     const image = await Camera.getPhoto({
@@ -65,6 +67,7 @@ const takePhoto = async () => {
       allowEditing: true,
       quality: 100,
       saveToGallery: true,
+      source: CameraSource.Camera,
     });
 
     if (image.path) {
@@ -75,20 +78,6 @@ const takePhoto = async () => {
     console.error(error);
   }
 };
-const addToList = async (path: string) => {
-  const name = path?.split("/").at(-1);
-  if (name) {
-    photoList.value.push({ name: name, data: await readPhoto(name) });
-  }
-};
-const readPhoto = async (fileName: string) => {
-  const file = await Filesystem.readFile({
-    path: `${rootDir}/${fileName}`,
-    directory: directory,
-  });
-  return `data:image/jpeg;base64,${file.data}`;
-};
-
 const uploadPhoto = async (image: any) => {
   try {
     const fileData = await Filesystem.readFile({
@@ -100,8 +89,8 @@ const uploadPhoto = async (image: any) => {
       fileContent.split("").map((char) => char.charCodeAt(0))
     );
     // firebase
-    const file = new Blob([byteNumbers], { type: image.format });
-    images.value = (await uploadImageToFireBase(file, 'gplx', userId)) || '';
+    const filess = new Blob([byteNumbers], { type: image.format });
+    images.value = (await uploadImageToFireBase(filess, 'gplx', userId)) || '';
     //
     const formData = new FormData();
     formData.append(
@@ -111,9 +100,9 @@ const uploadPhoto = async (image: any) => {
     );
 
     const response = await updloadImages(formData);
-
-    const result = response.text;
-    listData.value = response.text;
+    if(response) {
+      listData.value = response.text;
+    }
     if (response.text && listData.value) {
       name.value = listData.value.name || "";
       dob.value = listData.value.dob || "";
@@ -124,11 +113,14 @@ const uploadPhoto = async (image: any) => {
       expire_date.value = listData.value.expire_date || "";
       nationality.value = listData.value.nationality || "";
       level.value = listData.value.level || "";
-      fullname.value = localStorage.getItem('name') || '';
-      if (fullname.value !== name.value) {
-        notify.error("Vui lòng cung cấp thẻ chính chủ để xác thực!");
-        router.push("/tabs");
-      }
+       if (name.value !== fullname.value) {
+         showForm.value = false;
+         notify.error("Thông tin trên ảnh không khớp với thông tin đã đăng ký!");
+         console.error("Vui lòng cung cấp thẻ chính chủ để xác thực!");
+         setTimeout(() => {
+           router.push("/tabs");
+         }, 1000);
+       }
 
     } else {
       notify.error("Không thể xác thực thông tin từ ảnh. Vui lòng thử lại.");
@@ -137,24 +129,17 @@ const uploadPhoto = async (image: any) => {
       showForm.value = true;
     }, 1000);
 
-    return result;
   } catch (error) {
     console.error("Lỗi khi upload ảnh:", error);
     throw error;
   }
 };
-const handleSpace = (item: string) => {
-    return item.replace(/\s+/g, "")
-}
-
 ////////////
 const handleCheckboxChange = (type: string) => {
   if (type === 'correct') {
     isValid.value = true; 
-    console.log(isValid.value);
   } else if (type === 'incorrect') {
     isValid.value = false;
-    console.log("2",isValid.value);
   }
 };
 /////
@@ -181,24 +166,23 @@ const getGplxData = async () => {
 const saveForm = async () => {
   try {
     // Kiểm tra dữ liệu trước khi gửi
-    if (!dob.value || !name.value || !id.value || !nationality.value) {
-      notify.error("Vui lòng điền đầy đủ các trường bắt buộc");
+    if (isValid.value === null) {
+      notify.error("Vui lòng xác nhận thông tin trước khi lưu.");
       return;
-    }
-    // Gán dữ liệu vào listData
-    listData.value = {
-      name: name.value,
-      dob: dob.value,
-      id: handleSpace(id.value),
-      iplace: iplace.value,
-      origin_place: origin_place.value,
-      issue_date: issue_date.value,
-      expire_date: expire_date.value,
-      nationality: nationality.value,
-      level: level.value,
-      type: type.value,
+    } 
+      listData.value = {
+      name: name.value || '',
+      dob: dob.value || '',
+      id: handleSpace(id.value) || '',
+      iplace: iplace.value || '',
+      origin_place: origin_place.value || '',
+      issue_date: issue_date.value || '',
+      expire_date: expire_date.value || '',
+      nationality: nationality.value  || '',
+      level: level.value || '',
+      type: type.value || '',
       is_valid: isValid.value,
-      images: images.value,
+      images: images.value || '',
       user: userId,
     };
     if (localStorage.getItem("is_update") === "false") {
@@ -219,7 +203,7 @@ const saveForm = async () => {
         if (listDataGPLX.value.uuid) {
           await updateGPLX(listData.value, listDataGPLX.value.uuid);
         } else {
-          notify.error("UUID is missing, cannot update BHYT");
+          console.error("UUID is missing, cannot update BHYT");
         }
         notify.success("Dữ liệu đã được cập nhật thành công");
         localStorage.setItem("is_update", "false");
@@ -229,6 +213,7 @@ const saveForm = async () => {
         showForm.value = false;
       }
     }
+      
   } catch (error) {
     console.error("Lỗi khi lưu dữ liệu:", error);
     notify.error(`Lỗi xảy ra, vui lòng thử lại. ${error}`);
@@ -253,6 +238,7 @@ const presentAlert = async () => {
         text: "Cancel",
         role: "cancel",
         handler: () => {
+          showForm.value = false;
           router.push("/tabs");
         },
       },
@@ -262,7 +248,9 @@ const presentAlert = async () => {
   await alert.present();
 };
 onIonViewWillEnter(() => {
+  showForm.value = false;
     presentAlert();
+    fullname.value = localStorage.getItem('name') || '';
 });
 </script>
 
